@@ -24,7 +24,7 @@ ec_borrow(
   sig_level = 0.05,
   small_n_adj = TRUE,
   parallel = FALSE,
-  n_cores = detectCores(logical = FALSE),
+  n_cores = parallel::detectCores(logical = FALSE),
   output_frt = FALSE
 )
 }
@@ -55,7 +55,7 @@ include:
 }}
 
 \item{family}{A description of the outcome type. Default is "gaussian" for
-continuous outcomes, but can also be "binomial" for binary outcomes. #'}
+continuous outcomes, but can also be "binomial" for binary outcomes.}
 
 \item{n_fisher}{Integer specifying the number of randomizations for the
 Fisher randomization test (FRT). Default is \code{NULL}, meaning FRT is skipped
@@ -110,7 +110,7 @@ Default is \code{FALSE}.}
 
 \item{n_cores}{Integer specifying the number of cores to use for parallel
 computing. Default is the number of available physical cores on the
-machine, as determined by \code{detectCores(logical = FALSE)}.}
+machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
 
 \item{output_frt}{Logical value indicating whether to output all test
 statistic values from the Fisher randomization test. Default is \code{FALSE}.}

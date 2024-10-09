@@ -5,18 +5,19 @@ fit_outcome_model <- function(dat, family, outcome_model) {
     m0 <- glm(Y ~ X, family = family, dat %>% filter(A == 0)) %>%
       predict(dat, "response")
   } else if (outcome_model == "rf") {
+    rlang::check_installed("randomForest", reason = "to use `randomForest()`")
     if (family == "gaussian") {
-      m1 <- randomForest(dat$X[dat$A == 1, , drop = FALSE], dat$Y[dat$A == 1]) %>%
+      m1 <- randomForest::randomForest(dat$X[dat$A == 1, , drop = FALSE], dat$Y[dat$A == 1]) %>%
         predict(dat$X)
-      m0 <- randomForest(dat$X[dat$A == 0, , drop = FALSE], dat$Y[dat$A == 0]) %>%
+      m0 <- randomForest::randomForest(dat$X[dat$A == 0, , drop = FALSE], dat$Y[dat$A == 0]) %>%
         predict(dat$X)
     } else if (family == "binomial") {
-      m1 <- randomForest(
+      m1 <- randomForest::randomForest(
         dat$X[dat$A == 1, , drop = FALSE], as.factor(dat$Y[dat$A == 1])
       ) %>%
         predict(dat$X, type = "prob") %>%
         {.[, 2]}
-      m0 <- randomForest(
+      m0 <- randomForest::randomForest(
         dat$X[dat$A == 0, , drop = FALSE], as.factor(dat$Y[dat$A == 0])
       ) %>%
         predict(dat$X, type = "prob") %>%
@@ -172,10 +173,10 @@ fit_cf_model_mean <- function(dat_train, dat_pred, family, cf_model) {
     predict(fit, newdata = dat_pred, type = "response")
   } else if (cf_model == "rf") {
     if (family == "gaussian") {
-      fit <- randomForest(x = dat_train$x, y = dat_train$y)
+      fit <- randomForest::randomForest(x = dat_train$x, y = dat_train$y)
       predict(fit, newdata = dat_pred$x)
     } else if (family == "binomial") {
-      fit <- randomForest(x = dat_train$x, y = as.factor(dat_train$y))
+      fit <- randomForest::randomForest(x = dat_train$x, y = as.factor(dat_train$y))
       predict(fit, newdata = dat_pred$x, type = "prob")[,2]
     }
   }
@@ -195,14 +196,15 @@ fit_cf_model_mean_sd <- function(dat_train, dat_pred) { # family = "gaussian"
 
 fit_cf_model_quantile <- function(dat_train, dat_pred, a, cf_model) { # family = "gaussian"
   if (cf_model == "glm") {
-    fit_low <- rq(y ~ x, tau = a/2, data = dat_train)
-    fit_up <- rq(y ~ x, tau = 1 - a/2, data = dat_train)
+    fit_low <- quantreg::rq(y ~ x, tau = a/2, data = dat_train)
+    fit_up <- quantreg::rq(y ~ x, tau = 1 - a/2, data = dat_train)
     cbind(
       predict(fit_low, newdata = dat_pred),
       predict(fit_up, newdata = dat_pred)
     )
   } else if (cf_model == "rf") {
-    fit <- quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
+    rlang::check_installed("grf", reason = "to use `quantile_forest()`")
+    fit <- grf::quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
     predict(fit, dat_pred$x)$predictions
   }
 }
@@ -239,12 +241,13 @@ conformal_p <- function(x, y, s, family, cf, cf_score, cf_model,
         # compute score
         score_pred <- pmax(qhat_pred[,1] - y[id_pred], y[id_pred] - qhat_pred[,2])
       } else if (cf_score == "NN") {
+        rlang::check_installed("RANN", reason = "to use `nn2()`")
         # 1-nearest-neighbor
-        d1 <- nn2(
+        d1 <- RANN::nn2(
           dat_train %>% filter(y == 1) %>% pull(x),
           k = 2
         )$nn.dists[,2]
-        d0 <- nn2(
+        d0 <- RANN::nn2(
           dat_train %>% filter(y == 0) %>% pull(x),
           k = 2
         )$nn.dists[,2]
@@ -289,12 +292,12 @@ conformal_p <- function(x, y, s, family, cf, cf_score, cf_model,
       score_pred <- pmax(qhat_pred[,1] - y[id_pred], y[id_pred] - qhat_pred[,2])
     } else if (cf_score == "NN") {
       # 1-nearest-neighbor
-      d1 <- nn2(
+      d1 <- RANN::nn2(
         dat_train %>% filter(y == 1) %>% pull(x),
         dat_pred %>% filter(y == 1) %>% pull(x),
         k = 1
       )$nn.dists %>% as.vector()
-      d0 <- nn2(
+      d0 <- RANN::nn2(
         dat_train %>% filter(y == 0) %>% pull(x),
         dat_pred %>% filter(y == 0) %>% pull(x),
         k = 1
@@ -339,12 +342,12 @@ conformal_p <- function(x, y, s, family, cf, cf_score, cf_model,
         score_pred <- pmax(qhat_pred[,1] - y[id_pred], y[id_pred] - qhat_pred[,2])
       } else if (cf_score == "NN") {
         # 1-nearest-neighbor
-        d1 <- nn2(
+        d1 <- RANN::nn2(
           dat_train %>% filter(y == 1) %>% pull(x),
           dat_pred %>% filter(y == 1) %>% pull(x),
           k = 1
         )$nn.dists %>% as.vector()
-        d0 <- nn2(
+        d0 <- RANN::nn2(
           dat_train %>% filter(y == 0) %>% pull(x),
           dat_pred %>% filter(y == 0) %>% pull(x),
           k = 1

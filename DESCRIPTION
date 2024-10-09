@@ -4,8 +4,10 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Ke", "Zhu", , "kezhu0828@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8778-0086")),
-    person("Shu", "Yang", role = "aut"),
-    person("Xiaofei", "Wang", role = "aut")
+    person("Shu", "Yang", role = "aut",
+           comment = c(ORCID = "0000-0001-7703-707X")),
+    person("Xiaofei", "Wang", role = "aut",
+           comment = c(ORCID = "0000-0001-7512-8445"))
   )
 Description: Provides tools for estimating and testing the average
     treatment effect (ATE) in hybrid controlled trials, which integrate
@@ -15,16 +17,14 @@ Description: Provides tools for estimating and testing the average
     It also features Conformal Selective Borrowing (CSB) to borrow
     comparable external controls, addressing hidden bias.
 License: MIT + file LICENSE
-URL: https://github.com/ke-zhu/IntegrativeFRT
-BugReports: https://github.com/ke-zhu/IntegrativeFRT/issues
+URL: https://github.com/ke-zhu/intFRT
+BugReports: https://github.com/ke-zhu/intFRT/issues
 Imports: 
     dplyr,
-    grf,
     parallel,
     purrr,
     quantreg,
-    randomForest,
-    RANN,
+    rlang,
     tibble,
     WeightIt
 Encoding: UTF-8
@@ -32,3 +32,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.0.0)
+Suggests: 
+    grf,
+    randomForest,
+    RANN,
+    SelectiveIntegrative

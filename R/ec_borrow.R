@@ -25,7 +25,7 @@
 #'   * "Conformal Selective Borrow AIPW" (the proposed & defalut)
 #'   * "Conformal Selective Borrow ACW" (the proposed)
 #' @param family A description of the outcome type. Default is "gaussian" for
-#'   continuous outcomes, but can also be "binomial" for binary outcomes. #'
+#'   continuous outcomes, but can also be "binomial" for binary outcomes.
 #' @param n_fisher Integer specifying the number of randomizations for the
 #'   Fisher randomization test (FRT). Default is `NULL`, meaning FRT is skipped
 #'   to avoid long computation times without the user's permission. For reliable
@@ -66,7 +66,7 @@
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
 #'   computing. Default is the number of available physical cores on the
-#'   machine, as determined by `detectCores(logical = FALSE)`.
+#'   machine, as determined by `parallel::detectCores(logical = FALSE)`.
 #' @param output_frt Logical value indicating whether to output all test
 #'   statistic values from the Fisher randomization test. Default is `FALSE`.
 #'
@@ -150,12 +150,6 @@
 #' @import tibble
 #' @import dplyr
 #' @import purrr
-#' @import WeightIt
-#' @importFrom randomForest randomForest
-#' @importFrom grf quantile_forest
-#' @importFrom parallel mclapply detectCores
-#' @importFrom quantreg rq
-#' @importFrom RANN nn2
 #' @importFrom stats as.formula fisher.test gaussian glm pnorm predict qnorm resid sd t.test var
 #' @importFrom utils head tail
 #' @export
@@ -181,7 +175,7 @@ ec_borrow <- function(
     small_n_adj = TRUE,
     # computing & output
     parallel = FALSE,
-    n_cores = detectCores(logical = FALSE),
+    n_cores = parallel::detectCores(logical = FALSE),
     output_frt = FALSE
 ) {
 
@@ -457,9 +451,10 @@ ec_borrow <- function(
   }
 
   if (identical(method, "AdaLasso Selective Borrow ACW")) { # Chenyin's method
+    rlang::check_installed("SelectiveIntegrative", reason = "to use `srEC()`")
     est_fun <- function(dat) {
       fit <- with(dat,
-                  srEC(
+                  SelectiveIntegrative::srEC(
                     data_rt = list(X = X[S == 1,], Y = Y[S == 1], A = A[S == 1]),
                     data_ec = list(list(X = X[S == 0,], Y = Y[S == 0], A = A[S == 0])),
                     method = "glm"
@@ -553,7 +548,7 @@ ec_borrow <- function(
         if (parallel) {
           cat(paste0("parallel computing enabled with ", n_cores,
                      " cores for bootstrap SE of ", method, "\n\n"))
-          out_boot <- mclapply(1:n_boot, function(i) {
+          out_boot <- parallel::mclapply(1:n_boot, function(i) {
             dat_boot <- dat_origin %>%
               group_by(A, S) %>%
               slice_sample(prop = 1, replace = TRUE) %>%
@@ -658,7 +653,7 @@ ec_borrow <- function(
           cat(paste0("parallel computing enabled with ", n_cores,
                      " cores for ", method, "+FRT\n\n"))
           # randomization
-          out_frt <- mclapply(1:n_fisher, function(i) {
+          out_frt <- parallel::mclapply(1:n_fisher, function(i) {
             dat_rand <- dat_origin %>%
               mutate(A = {A[S == 1] <- sample(A[S == 1]); A})
             tryCatch({
