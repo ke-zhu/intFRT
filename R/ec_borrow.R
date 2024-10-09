@@ -202,16 +202,19 @@
 #'   filter(Type != "RCT treated")
 #'
 #' # Fit quantile regressions to visualize the main range of RCT controls
-#' fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, subset = dat_plot$Type == "RCT control")
+#' fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot,
+#'              subset = dat_plot$Type == "RCT control")
 #' dat_plot$pred975 <- predict(fit975, newdata = dat_plot)
 #'
-#' fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot, subset = dat_plot$Type == "RCT control")
+#' fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot,
+#'              subset = dat_plot$Type == "RCT control")
 #' dat_plot$pred025 <- predict(fit025, newdata = dat_plot)
 #'
 #' # Plot results
 #' dat_plot %>%
 #'   ggplot() +
-#'   geom_ribbon(aes(`Sampling Score`, ymin = pred025, ymax = pred975), fill = "grey80", alpha = 0.5) +
+#'   geom_ribbon(aes(`Sampling Score`, ymin = pred025, ymax = pred975),
+#'               fill = "grey80", alpha = 0.5) +
 #'   geom_point(aes(`Sampling Score`, Y, color = Type)) +
 #'   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
 #'

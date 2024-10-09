@@ -6,27 +6,25 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of **intFRT** is to **int**egrate randomized controlled trials
+The goal of **intFRT** is to integrate randomized controlled trials
 (RCTs) with external controls (ECs) in hybrid controlled trials,
-harnessing Fisher randomization tests (**FRT**) and Conformal Selective
-Borrowing (CSB).
+harnessing Fisher randomization tests (FRT) and Conformal Selective
+Borrowing (CSB). It enhances the statistical efficiency of average
+treatment effect (ATE) estimation and inference while ensuring valid
+hypothesis testing. Key features include:
 
-It improves the statistical efficiency of average treatment effect (ATE)
-estimation and inference while ensuring valid hypothesis testing.
+- Fisher randomization tests (FRT) in hybrid controlled trials, ensuring
+  strict control of the Type I error rate.
 
-The package offers functions to perform FRTs in hybrid trials, ensuring
-strict control of the Type I error rate.
+- Conformal Selective Borrowing (CSB) serves as both an ATE estimator
+  and a test statistic for FRT, enabling selective borrowing of
+  comparable ECs to reduce hidden bias and improve statistical power.
 
-It implements CSB as both an estimator of ATE and a test statistic for
-FRT, enabling selective borrowing of comparable ECs to mitigate hidden
-bias and enhance statistical power.
+- Adaptive determination of the selection threshold for CSB.
 
-It also includes a function to adaptively determine the selection
-threshold for CSB.
-
-Additionally, the package provides No Borrowing and various EC borrowing
-estimators (IPW, staIPW, CW, OM, AIPW, ACW), along with their inference
-results based on asymptotic normality, for comparison.
+- The package also provides No Borrowing and various EC borrowing
+  estimators (IPW, staIPW, CW, OM, AIPW, ACW), along with their
+  inference results based on asymptotic normality for comparison.
 
 ## Installation
 
@@ -128,8 +126,8 @@ print(result_csb$res)
 #> # A tibble: 2 × 9
 #>   method                   est     se   ci_l  ci_u p_value n_sel ess_sel runtime
 #>   <chr>                  <dbl>  <dbl>  <dbl> <dbl>   <dbl> <dbl>   <dbl>   <dbl>
-#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0640
-#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.66
+#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0390
+#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.433
 
 # View IDs of borrowed external controls
 result_csb$out$id_sel[[1]]
@@ -180,16 +178,19 @@ dat_plot <- tibble(Y, A, S, X, `Sampling Score`, sel) %>%
   filter(Type != "RCT treated")
 
 # Fit quantile regressions to visualize the main range of RCT controls
-fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, subset = dat_plot$Type == "RCT control")
+fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, 
+             subset = dat_plot$Type == "RCT control")
 dat_plot$pred975 <- predict(fit975, newdata = dat_plot)
 
-fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot, subset = dat_plot$Type == "RCT control")
+fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot, 
+             subset = dat_plot$Type == "RCT control")
 dat_plot$pred025 <- predict(fit025, newdata = dat_plot)
 
 # Plot results
 dat_plot %>% 
   ggplot() +
-  geom_ribbon(aes(`Sampling Score`, ymin = pred025, ymax = pred975), fill = "grey80", alpha = 0.5) +
+  geom_ribbon(aes(`Sampling Score`, ymin = pred025, ymax = pred975), 
+              fill = "grey80", alpha = 0.5) +
   geom_point(aes(`Sampling Score`, Y, color = Type)) +
   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
 ```
