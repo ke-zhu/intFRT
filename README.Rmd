@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of **intFRT** is to integrate randomized controlled trials (RCTs) with external controls (ECs) in hybrid controlled trials, harnessing Fisher randomization tests (FRT) and Conformal Selective Borrowing (CSB). It enhances the statistical efficiency of average treatment effect (ATE) estimation and inference while ensuring valid hypothesis testing. Key features include:
+The goal of **intFRT** is to **int**egrate randomized controlled trials (RCTs) with external controls (ECs) in hybrid controlled trials, harnessing Fisher randomization tests (**FRT**) and Conformal Selective Borrowing (CSB). It enhances the statistical efficiency of average treatment effect (ATE) estimation and inference while ensuring valid hypothesis testing. Key features include:
 
 - Fisher randomization tests (FRT) in hybrid controlled trials, ensuring strict control of the Type I error rate.
 
@@ -103,9 +103,18 @@ result_csb <- ec_borrow(
 
 # View results
 print(result_csb$res, width = Inf)
+```
 
+- `est`: ATE estimate.
+- `se`, `ci_l`, `ci_u`, `p_value` (first row): Standard error, confidence interval, p-value based on asymptotic normality.
+- `p_value` (second row): P-value based on FRT.
+- `n_sel`: The number of borrowed external controls.
+- `ess_sel`: The effective sample size of borrowed external controls.
+- `runtime`: The computation time.
+
+```{r}
 # View IDs of borrowed external controls
-result_csb$out$id_sel[[1]]
+result_csb$id_sel
 ```
 
 
@@ -119,7 +128,7 @@ library(quantreg)
 
 # Mark borrowed external controls for plotting
 sel <- rep(0, length(Y))
-sel[result_csb$out$id_sel[[1]]] <- 1
+sel[result_csb$id_sel] <- 1
 
 # Fit sampling score for multiple covariates 
 `Sampling Score` <- glm(S ~ X) %>% predict(type = "response")

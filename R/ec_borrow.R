@@ -80,8 +80,7 @@
 #'      - `n_sel`: The number of borrowed external controls.
 #'      - `ess_sel`: The effective sample size of borrowed external controls.
 #'      - `runtime`: The computation time.
-#'    * `out`: A tibble containing raw output.
-#'      - `id_sel`: The row numbers of selected external controls.
+#'    * `id_sel`: The row numbers of selected external controls.
 #'    * `dat_info`: A tibble containing main information about the original data:
 #'      - `n_rt`: The number of units under randomized treatment.
 #'      - `n_rc`: The number of units under randomized control.
@@ -89,6 +88,7 @@
 #'      - `n_et`: The number of all external controls.
 #'      - `id_et`: The row numbers of all external controls.
 #'    * `gamma_sel`: Conformal selection threshold.
+#'    * `out`: A tibble containing raw output.
 #'    * `out_frt`: A tibble containing output of FRT, if `output_frt` is `TRUE`.
 #'
 #' @examples
@@ -140,7 +140,7 @@
 #' print(result_nb$res)
 #'
 #' # View IDs of borrowed external controls (None for No Borrowing)
-#' result_nb$out$id_sel[[1]]
+#' result_nb$id_sel
 #'
 #' # Compute adaptive gamma (with a small n_rep_gamma for illustration)
 #' ada_g <- compute_ada_gamma(
@@ -169,11 +169,11 @@
 #' print(result_csb$res)
 #'
 #' # View IDs of borrowed external controls
-#' result_csb$out$id_sel[[1]]
+#' result_csb$id_sel
 #'
 #' # Mark borrowed external controls for plotting
 #' sel <- rep(0, length(Y))
-#' sel[result_csb$out$id_sel[[1]]] <- 1
+#' sel[result_csb$id_sel] <- 1
 #'
 #' # Visualize borrowed external controls with ggplot
 #' library(dplyr)
@@ -784,8 +784,8 @@ ec_borrow <- function(
     id_ec = list(which(dat_origin$S == 0))
   )
   if (output_frt) {
-    lst(res, out, dat_info, gamma_sel, out_frt)
+    lst(res, id_sel = out$id_sel[[1]], dat_info, gamma_sel, out, out_frt)
   } else {
-    lst(res, out, dat_info, gamma_sel)
+    lst(res, id_sel = out$id_sel[[1]], dat_info, gamma_sel, out)
   }
 }
