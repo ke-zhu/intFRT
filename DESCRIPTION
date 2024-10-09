@@ -1,12 +1,34 @@
 Package: intFRT
-Title: What the Package Does (One Line, Title Case)
+Title: Randomization Test and Selective Borrowing in Hybrid Controlled Trials
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Authors@R: c(
+    person("Ke", "Zhu", , "kezhu0828@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8778-0086")),
+    person("Shu", "Yang", role = "aut"),
+    person("Xiaofei", "Wang", role = "aut")
+  )
+Description: Provides tools for estimating and testing the average
+    treatment effect (ATE) in hybrid controlled trials, which integrate
+    randomized controlled trials with external control data. The package
+    implements estimation methods such as IPW, CW, OM, AIPW, and ACW,
+    alongside asymptotic inference and Fisher randomization tests (FRT).
+    It also features Conformal Selective Borrowing (CSB) to borrow
+    comparable external controls, addressing hidden bias.
+License: MIT + file LICENSE
+URL: https://github.com/ke-zhu/IntegrativeFRT
+BugReports: https://github.com/ke-zhu/IntegrativeFRT/issues
+Imports: 
+    dplyr,
+    grf,
+    parallel,
+    purrr,
+    quantreg,
+    randomForest,
+    RANN,
+    tibble,
+    WeightIt
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends: 
+    R (>= 4.0.0)

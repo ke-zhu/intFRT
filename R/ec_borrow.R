@@ -114,7 +114,7 @@
 #' Y <- 1 + 0.5 * A + X[,1] + X[,2] + rnorm(n)
 #'
 #' # Perform Fisher Randomization Test and No Borrowing
-#' result <- ec_borrow(
+#' result_nb <- ec_borrow(
 #'   Y = Y,
 #'   A = A,
 #'   S = S,
@@ -125,10 +125,13 @@
 #' )
 #'
 #' # View results
-#' print(result$res)
+#' print(result_nb$res)
+#'
+#' # View ID of borrowed external controls (For No Borrowing, it is NULL)
+#' result_nb$out$id_sel[[1]]
 #'
 #' # Perform Fisher Randomization Test and Conformal Selective Borrowing
-#' result <- ec_borrow(
+#' result_csb <- ec_borrow(
 #'   Y = Y,
 #'   A = A,
 #'   S = S,
@@ -139,7 +142,10 @@
 #' )
 #'
 #' # View results
-#' print(result$res)
+#' print(result_csb$res)
+#'
+#' # View ID of borrowed external controls (For No Borrowing, it is NULL)
+#' result_csb$out$id_sel[[1]]
 #'
 #' @import tibble
 #' @import dplyr
