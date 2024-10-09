@@ -126,8 +126,8 @@ print(result_csb$res)
 #> # A tibble: 2 × 9
 #>   method                   est     se   ci_l  ci_u p_value n_sel ess_sel runtime
 #>   <chr>                  <dbl>  <dbl>  <dbl> <dbl>   <dbl> <dbl>   <dbl>   <dbl>
-#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0390
-#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.433
+#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0520
+#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.601
 
 # View IDs of borrowed external controls
 result_csb$out$id_sel[[1]]
@@ -196,3 +196,7 @@ dat_plot %>%
 ```
 
 <img src="man/figures/README-example-1.svg" width="100%" />
+
+The above figure shows that Conformal Selective Borrowing discards
+uncomparable ECs and borrows most of the comparable ECs, except for a
+few suspicious ones.

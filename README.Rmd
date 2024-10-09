@@ -159,4 +159,4 @@ dat_plot %>%
   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
 ```
 
-
+The above figure shows that Conformal Selective Borrowing discards uncomparable ECs and borrows most of the comparable ECs, except for a few suspicious ones.
