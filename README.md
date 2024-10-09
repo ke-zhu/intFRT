@@ -122,12 +122,16 @@ result_csb <- ec_borrow(
 )
 
 # View results
-print(result_csb$res)
+print(result_csb$res, width = Inf)
 #> # A tibble: 2 × 9
-#>   method                   est     se   ci_l  ci_u p_value n_sel ess_sel runtime
-#>   <chr>                  <dbl>  <dbl>  <dbl> <dbl>   <dbl> <dbl>   <dbl>   <dbl>
-#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0520
-#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.601
+#>   method                                 est     se   ci_l  ci_u  p_value n_sel
+#>   <chr>                                <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
+#> 1 Conformal Selective Borrow AIPW      0.875  0.247  0.391  1.36 0.000393    44
+#> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
+#>   ess_sel runtime
+#>     <dbl>   <dbl>
+#> 1    35.7  0.0490
+#> 2    NA    0.468
 
 # View IDs of borrowed external controls
 result_csb$out$id_sel[[1]]

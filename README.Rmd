@@ -102,7 +102,7 @@ result_csb <- ec_borrow(
 )
 
 # View results
-print(result_csb$res)
+print(result_csb$res, width = Inf)
 
 # View IDs of borrowed external controls
 result_csb$out$id_sel[[1]]
