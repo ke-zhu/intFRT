@@ -59,14 +59,19 @@ This function adaptively determines the threshold (gamma) to minimize the
 Mean Squared Error (MSE) when performing Conformal Selective Borrowing.
 }
 \examples{
+# This example illustrates the use of the Fisher Randomization Test (FRT)
+# and different borrowing methods for hybrid controlled trials.
+
+library(intFRT)
+
 # Simulate data for a hybrid controlled trial
-set.seed(123)
-n_rct <- 50  # Number of observations in randomized controlled trial
+set.seed(1)
+n_rct <- 50  # Number of observations in the randomized controlled trial
 n_ec <- 100  # Number of external controls
 n <- n_rct + n_ec  # Total number of observations
 
-# Covariates (2 covariates, normally distributed)
-X <- matrix(rnorm(n * 2), n, 2)
+# Covariates (2 covariates, uniformly distributed)
+X <- matrix(runif(n * 2), n, 2)
 
 # Treatment assignment (1 = treatment, 0 = control)
 A <- c(rep(0:1, each = n_rct / 2), rep(0, n_ec))
@@ -74,10 +79,24 @@ A <- c(rep(0:1, each = n_rct / 2), rep(0, n_ec))
 # Data source indicator (1 = randomized trial, 0 = external control)
 S <- c(rep(1, n_rct), rep(0, n_ec))
 
-# Generate outcome (continuous)
-Y <- 1 + 0.5 * A + X[,1] + X[,2] + rnorm(n)
+# Generate potential outcomes (continuous)
+Y1 <- 1 + 2 * X[,1] + 0.1 * X[,2] + rnorm(n)
+Y0 <- 2 * X[,1] + 0.1 * X[,2] + rnorm(n)
 
-# Compute adaptive gamma with a small n_rep_gamma for fast illustration
-compute_ada_gamma(Y, A, S, X, n_rep_gamma = 10)
+# Introduce bias in half of the external controls
+id_biased_EC <- tail(which(S == 0), n = n_ec / 2)
+Y0[id_biased_EC] <- Y0[id_biased_EC] - 10
+
+# Observed outcome
+Y <- A * Y1 + (1 - A) * Y0
+
+# Compute adaptive gamma (with a small n_rep_gamma for illustration)
+ada_g <- compute_ada_gamma(
+  Y, A, S, X,
+  # Use a small n_rep_gamma for fast illustration;
+  # recommend n_rep_gamma = 100 for more stable results
+  n_rep_gamma = 10
+)
+ada_g
 
 }
