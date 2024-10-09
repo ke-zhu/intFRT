@@ -43,10 +43,9 @@ pak::pak("ke-zhu/intFRT")
 This example illustrates the use of the Fisher Randomization Test (FRT)
 and Conformal Selective Borrowing methods in hybrid controlled trials.
 
-``` r
-library(intFRT)
+### Simulate data for a hybrid controlled trial
 
-# Simulate data for a hybrid controlled trial
+``` r
 set.seed(1)
 n_rct <- 50  # Number of observations in the randomized controlled trial
 n_ec <- 100  # Number of external controls
@@ -71,8 +70,12 @@ Y0[id_biased_EC] <- Y0[id_biased_EC] - 10
 
 # Observed outcome
 Y <- A * Y1 + (1 - A) * Y0
+```
 
-# Compute adaptive gamma (with a small n_rep_gamma for illustration)
+### Adaptive selection threshold
+
+``` r
+library(intFRT)
 ada_g <- compute_ada_gamma(
   Y, A, S, X, 
   # Use a small n_rep_gamma for fast illustration; 
@@ -100,8 +103,13 @@ ada_g <- compute_ada_gamma(
 #> For gamma_sel = 0.9, MSE = 0.243325393833669
 #> 
 #> For gamma_sel = 1, MSE = 0.12007616488232
+ada_g
+#> [1] 0.2
+```
 
-# Perform Fisher Randomization Test with Conformal Selective Borrowing
+### Fisher Randomization Test with Conformal Selective Borrowing
+
+``` r
 result_csb <- ec_borrow(
   Y = Y,
   A = A,
@@ -120,20 +128,19 @@ print(result_csb$res)
 #> # A tibble: 2 × 9
 #>   method                   est     se   ci_l  ci_u p_value n_sel ess_sel runtime
 #>   <chr>                  <dbl>  <dbl>  <dbl> <dbl>   <dbl> <dbl>   <dbl>   <dbl>
-#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0510
-#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.637
+#> 1 Conformal Selective …  0.875  0.247  0.391  1.36 3.93e-4    44    35.7  0.0640
+#> 2 Conformal Selective … NA     NA     NA     NA    9.09e-2    NA    NA    0.66
 
 # View IDs of borrowed external controls
 result_csb$out$id_sel[[1]]
 #>  [1]  51  52  53  54  55  56  57  58  60  62  63  64  65  66  67  68  69  71  72
 #> [20]  73  74  75  76  77  78  79  81  82  83  84  85  86  88  90  91  92  93  94
 #> [39]  95  96  97  98  99 100
+```
 
-# Mark borrowed external controls for plotting
-sel <- rep(0, length(Y))
-sel[result_csb$out$id_sel[[1]]] <- 1
+### Visualize borrowed external controls
 
-# Visualize borrowed external controls with ggplot
+``` r
 library(dplyr)
 #> 
 #> Attaching package: 'dplyr'
@@ -147,6 +154,10 @@ library(ggplot2)
 library(forcats)
 library(quantreg)
 #> Loading required package: SparseM
+
+# Mark borrowed external controls for plotting
+sel <- rep(0, length(Y))
+sel[result_csb$out$id_sel[[1]]] <- 1
 
 # Fit sampling score for multiple covariates 
 `Sampling Score` <- glm(S ~ X) %>% predict(type = "response")
@@ -168,7 +179,7 @@ dat_plot <- tibble(Y, A, S, X, `Sampling Score`, sel) %>%
   ) %>% 
   filter(Type != "RCT treated")
 
-# Fit quantile regressions for prediction intervals
+# Fit quantile regressions to visualize the main range of RCT controls
 fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, subset = dat_plot$Type == "RCT control")
 dat_plot$pred975 <- predict(fit975, newdata = dat_plot)
 

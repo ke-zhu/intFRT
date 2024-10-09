@@ -262,7 +262,7 @@ dat_plot <- tibble(Y, A, S, X, `Sampling Score`, sel) \%>\%
   ) \%>\%
   filter(Type != "RCT treated")
 
-# Fit quantile regressions for prediction intervals
+# Fit quantile regressions to visualize the main range of RCT controls
 fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, subset = dat_plot$Type == "RCT control")
 dat_plot$pred975 <- predict(fit975, newdata = dat_plot)
 
