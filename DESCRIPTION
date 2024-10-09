@@ -1,5 +1,5 @@
 Package: intFRT
-Title: Randomization Test and Selective Borrowing in Hybrid Controlled Trials
+Title: Fisher Randomization Test and Conformal Selective Borrowing in Hybrid Controlled Trials
 Version: 0.0.0.9000
 Authors@R: c(
     person("Ke", "Zhu", , "kezhu0828@gmail.com", role = c("aut", "cre"),
