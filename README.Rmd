@@ -1,0 +1,104 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# intFRT
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of **intFRT** is to **int**egrate randomized controlled trials (RCTs) with external controls (ECs) in hybrid controlled trials, harnessing Fisher randomization tests (**FRT**) and Conformal Selective Borrowing (CSB).
+
+It improves the statistical efficiency of average treatment effect (ATE) estimation and inference while ensuring valid hypothesis testing.
+
+The package offers functions to perform FRTs in hybrid trials, ensuring strict control of the Type I error rate.
+
+It implements CSB as both an estimator of ATE and a test statistic for FRT, enabling selective borrowing of comparable ECs to mitigate hidden bias and enhance statistical power.
+
+It also includes a function to adaptively determine the selection threshold for CSB.
+
+Additionally, the package provides No Borrowing and various EC borrowing estimators (IPW, staIPW, CW, OM, AIPW, ACW), along with their inference results based on asymptotic normality, for comparison.
+
+## Installation
+
+You can install the development version of intFRT from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("ke-zhu/intFRT")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(intFRT)
+# This example illustrates the use of Fisher Randomization Test (FRT) and
+# different borrowing methods for hybrid controlled trials.
+
+# Simulate data for a hybrid controlled trial
+set.seed(123)
+n_rct <- 50  # Number of observations in randomized controlled trial
+n_ec <- 100  # Number of external controls
+n <- n_rct + n_ec  # Total number of observations
+
+# Covariates (2 covariates, normally distributed)
+X <- matrix(rnorm(n * 2), n, 2)
+
+# Treatment assignment (1 = treatment, 0 = control)
+A <- c(rep(0:1, each = n_rct / 2), rep(0, n_ec))
+
+# Data source indicator (1 = randomized trial, 0 = external control)
+S <- c(rep(1, n_rct), rep(0, n_ec))
+
+# Generate outcome (continuous)
+Y <- 1 + 0.5 * A + X[,1] + X[,2] + rnorm(n)
+
+# Perform Fisher Randomization Test and No Borrowing
+result_nb <- ec_borrow(
+  Y = Y,
+  A = A,
+  S = S,
+  X = X,
+  method = "No Borrow AIPW",
+  family = "gaussian",
+  n_fisher = 10  # FRT with 10 randomizations for illustration
+)
+
+# View results
+print(result_nb$res)
+
+# View ID of borrowed external controls (For No Borrowing, it is NULL)
+result_nb$out$id_sel[[1]]
+
+# Perform Fisher Randomization Test and Conformal Selective Borrowing
+result_csb <- ec_borrow(
+  Y = Y,
+  A = A,
+  S = S,
+  X = X,
+  method = "Conformal Selective Borrow AIPW",
+  family = "gaussian",
+  n_fisher = 10  # FRT with 10 randomizations for illustration
+)
+
+# View results
+print(result_csb$res)
+
+# View ID of borrowed external controls (For No Borrowing, it is NULL)
+result_csb$out$id_sel[[1]]
+```
+
+
