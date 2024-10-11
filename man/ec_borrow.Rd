@@ -49,7 +49,6 @@ include:
 \item "Borrow CW"
 \item "Borrow AIPW"
 \item "Borrow ACW"
-\item "AdaLasso Selective Borrow ACW"
 \item "Conformal Selective Borrow AIPW" (the proposed & defalut)
 \item "Conformal Selective Borrow ACW" (the proposed)
 }}

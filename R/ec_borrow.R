@@ -21,7 +21,6 @@
 #'   * "Borrow CW"
 #'   * "Borrow AIPW"
 #'   * "Borrow ACW"
-#'   * "AdaLasso Selective Borrow ACW"
 #'   * "Conformal Selective Borrow AIPW" (the proposed & defalut)
 #'   * "Conformal Selective Borrow ACW" (the proposed)
 #' @param family A description of the outcome type. Default is "gaussian" for
