@@ -13,18 +13,20 @@ Borrowing (CSB). It enhances the statistical efficiency of average
 treatment effect (ATE) estimation and inference while ensuring valid
 hypothesis testing. Key features include:
 
-- Fisher randomization tests (FRT) in hybrid controlled trials, ensuring
-  strict control of the Type I error rate.
+🎲 **Fisher Randomization Tests (FRT)**: Ensures strict control of the
+Type I error rate in hybrid controlled trials.
 
-- Conformal Selective Borrowing (CSB) serves as both an ATE estimator
-  and a test statistic for FRT, enabling selective borrowing of
-  comparable ECs to reduce hidden bias and improve statistical power.
+🧲 **Conformal Selective Borrowing (CSB)**: Serves as both an ATE
+estimator and a test statistic for FRT, selectively borrowing comparable
+ECs to reduce hidden bias and enhance statistical power.
 
-- Adaptive determination of the selection threshold for CSB.
+⚙️ **Adaptive Selection Threshold**: Dynamically determines the
+selection threshold for CSB.
 
-- The package also provides No Borrowing and various EC borrowing
-  estimators (IPW, staIPW, CW, OM, AIPW, ACW), along with their
-  inference results based on asymptotic normality for comparison.
+📊 **Flexible Estimator Options**: Offers No Borrowing and various EC
+borrowing estimators (IPW, staIPW, CW, OM, AIPW, ACW) with inference
+results based on asymptotic normality. These estimators can also be used
+as test statistics in FRT.
 
 ## Installation
 
@@ -132,7 +134,7 @@ print(result_csb$res, width = Inf)
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
 #> 1    35.7  0.0510
-#> 2    NA    0.443
+#> 2    NA    0.507
 ```
 
 - `est`: ATE estimate.
