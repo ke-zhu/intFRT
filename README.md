@@ -117,8 +117,9 @@ result_csb <- ec_borrow(
   family = "gaussian",
   gamma_sel = ada_g,
   # FRT with 10 randomizations for illustration
-  # recommend n_fisher = 5000 for more powerful results
   n_fisher = 10
+  # Recommend `n_fisher = 5000` or more
+  # To perform only Conformal Selective Borrowing, set `n_fisher = NULL`
 )
 
 # View results
@@ -131,7 +132,7 @@ print(result_csb$res, width = Inf)
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
 #> 1    35.7  0.0510
-#> 2    NA    0.470
+#> 2    NA    0.443
 ```
 
 - `est`: ATE estimate.
@@ -214,3 +215,10 @@ dat_plot %>%
 The above figure shows that Conformal Selective Borrowing discards
 uncomparable ECs and borrows most of the comparable ECs, except for a
 few suspicious ones.
+
+## Reference
+
+Zhu, Ke, Shu Yang, and Xiaofei Wang. (2024) “Enhancing Statistical
+Validity and Power in Hybrid Controlled Trials: A Randomization
+Inference Approach with Conformal Selective Borrowing.” arXiv.
+<http://arxiv.org/abs/2410.11713>.
