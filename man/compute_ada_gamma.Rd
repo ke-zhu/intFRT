@@ -10,8 +10,7 @@ compute_ada_gamma(
   S,
   X,
   family = "gaussian",
-  gamma_grid = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
-  measure = "mse_hat",
+  gamma_grid = seq(0, 1, by = 0.1),
   n_rep_gamma = 100,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
@@ -29,17 +28,13 @@ data, 0 for external control data).}
 \item{X}{Matrix of covariates.}
 
 \item{family}{A description of the outcome type. Default is "gaussian" for
-continuous outcomes, but can also be "binomial" for binary outcomes.}
+continuous outcomes.}
 
 \item{gamma_grid}{Numeric vector representing the grid of potential gamma
 values to search over. Default is a sequence from 0 to 1 with 11 grids.}
 
-\item{measure}{The performance metric to be minimized. Default is "mse_hat".
-Other options include "var_hat" and "bias2_hat", but these are only for
-comparison purposes and not recommended for actual selection.}
-
-\item{n_rep_gamma}{Integer specifying the number of data-splitting iterations
-for estimating the measure given a certain gamma. Default is 100.}
+\item{n_rep_gamma}{Integer specifying the number of resampling iterations
+for estimating the MSE given a certain gamma. Default is 100.}
 
 \item{parallel}{Logical value indicating whether to use parallel computing.
 Default is \code{FALSE}.}
@@ -52,7 +47,7 @@ machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
 }
 \value{
 A numeric value representing the selected gamma that minimizes the
-specified performance measure (default is MSE).
+empirical MSE.
 }
 \description{
 This function adaptively determines the threshold (gamma) to minimize the

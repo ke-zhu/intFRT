@@ -82,29 +82,29 @@ ada_g <- compute_ada_gamma(
   # recommend n_rep_gamma = 100 for more stable results
   n_rep_gamma = 10
 )
-#> For gamma_sel = 0, MSE = 1.65135405498681
+#> For gamma_sel = 0, MSE = 0.44756173130003
 #> 
-#> For gamma_sel = 0.1, MSE = 0.0561366258485774
+#> For gamma_sel = 0.1, MSE = 0.0577786569923681
 #> 
-#> For gamma_sel = 0.2, MSE = 0.0374034434644345
+#> For gamma_sel = 0.2, MSE = 0.0721770979052318
 #> 
-#> For gamma_sel = 0.3, MSE = 0.0742880174715587
+#> For gamma_sel = 0.3, MSE = 0.0771846127784546
 #> 
-#> For gamma_sel = 0.4, MSE = 0.0964136504224823
+#> For gamma_sel = 0.4, MSE = 0.0793061616331322
 #> 
-#> For gamma_sel = 0.5, MSE = 0.218671681962682
+#> For gamma_sel = 0.5, MSE = 0.0870810648172806
 #> 
-#> For gamma_sel = 0.6, MSE = 0.0945245180126159
+#> For gamma_sel = 0.6, MSE = 0.101675332396415
 #> 
-#> For gamma_sel = 0.7, MSE = 0.206554346082695
+#> For gamma_sel = 0.7, MSE = 0.136798336053251
 #> 
-#> For gamma_sel = 0.8, MSE = 0.135088360512019
+#> For gamma_sel = 0.8, MSE = 0.128939751207904
 #> 
-#> For gamma_sel = 0.9, MSE = 0.243325393833669
+#> For gamma_sel = 0.9, MSE = 0.115160513302737
 #> 
-#> For gamma_sel = 1, MSE = 0.12007616488232
+#> For gamma_sel = 1, MSE = 0.119573178266935
 ada_g
-#> [1] 0.2
+#> [1] 0.1
 ```
 
 ### Fisher Randomization Test with Conformal Selective Borrowing
@@ -129,12 +129,12 @@ print(result_csb$res, width = Inf)
 #> # A tibble: 2 × 9
 #>   method                                 est     se   ci_l  ci_u  p_value n_sel
 #>   <chr>                                <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
-#> 1 Conformal Selective Borrow AIPW      0.875  0.247  0.391  1.36 0.000393    44
+#> 1 Conformal Selective Borrow AIPW      0.855  0.250  0.366  1.34 0.000618    46
 #> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    35.7  0.0510
-#> 2    NA    0.507
+#> 1    40.5  0.0530
+#> 2    NA    0.496
 ```
 
 - `est`: ATE estimate.
@@ -148,9 +148,9 @@ print(result_csb$res, width = Inf)
 ``` r
 # View IDs of borrowed external controls
 result_csb$id_sel
-#>  [1]  51  52  53  54  55  56  57  58  60  62  63  64  65  66  67  68  69  71  72
-#> [20]  73  74  75  76  77  78  79  81  82  83  84  85  86  88  90  91  92  93  94
-#> [39]  95  96  97  98  99 100
+#>  [1]  51  52  53  54  55  56  57  58  60  62  63  64  65  66  67  68  69  70  71
+#> [20]  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  88  90  91  92
+#> [39]  93  94  95  96  97  98  99 100
 ```
 
 ### Visualize borrowed external controls

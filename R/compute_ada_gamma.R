@@ -9,14 +9,11 @@
 #'   data, 0 for external control data).
 #' @param X Matrix of covariates.
 #' @param family A description of the outcome type. Default is "gaussian" for
-#'   continuous outcomes, but can also be "binomial" for binary outcomes.
+#'   continuous outcomes.
 #' @param gamma_grid Numeric vector representing the grid of potential gamma
 #'   values to search over. Default is a sequence from 0 to 1 with 11 grids.
-#' @param measure The performance metric to be minimized. Default is "mse_hat".
-#'   Other options include "var_hat" and "bias2_hat", but these are only for
-#'   comparison purposes and not recommended for actual selection.
-#' @param n_rep_gamma Integer specifying the number of data-splitting iterations
-#'   for estimating the measure given a certain gamma. Default is 100.
+#' @param n_rep_gamma Integer specifying the number of resampling iterations
+#'   for estimating the MSE given a certain gamma. Default is 100.
 #' @param parallel Logical value indicating whether to use parallel computing.
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
@@ -25,7 +22,7 @@
 #' @param ... Additional arguments passed to the internal `ec_borrow` function.
 #'
 #' @return A numeric value representing the selected gamma that minimizes the
-#'   specified performance measure (default is MSE).
+#'   empirical MSE.
 #'
 #' @examples
 #' # This example illustrates the use of the Fisher Randomization Test (FRT)
@@ -74,42 +71,63 @@
 #' @export
 compute_ada_gamma <- function(Y, A, S, X,
                               family = "gaussian",
-                              gamma_grid = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
-                              measure = "mse_hat", n_rep_gamma = 100,
+                              gamma_grid = seq(0, 1, by = 0.1),
+                              n_rep_gamma = 100,
                               parallel = F,
                               n_cores = parallel::detectCores(logical = FALSE),
                               ...) {
   if (!parallel) {n_cores <- 1}
-  res_grid <- parallel::mclapply(gamma_grid, function(g) {
-    dat_rct <- tibble(Y, A, S, X) %>% filter(S == 1)
-    dat_ec <- tibble(Y, A, S, X) %>% filter(S == 0)
-    n_rt1 <- floor(0.5 * sum(dat_rct$A == 1))
-    n_rc1 <- floor(0.5 * sum(dat_rct$A == 0))
-    est_rep <- map(1:n_rep_gamma, ~ {
-      fold1_id <- c(
-        sample(which(dat_rct$A == 1), size = n_rt1),
-        sample(which(dat_rct$A == 0), size = n_rc1)
-      )
-      dat1 <- bind_rows(dat_rct[fold1_id,], dat_ec)
-      dat2 <- bind_rows(dat_rct[-fold1_id,], dat_ec)
+  if (any(gamma_grid == 1)) {
+    id_nb <- which(gamma_grid == 1)
+  } else {
+    gamma_grid <- c(gamma_grid, 1)
+    id_nb <- which(gamma_grid == 1)
+  }
+  # data
+  dat_rct <- tibble(Y, A, S, X) %>% filter(S == 1)
+  dat_ec <- tibble(Y, A, S, X) %>% filter(S == 0)
+  dat_full <- bind_rows(dat_rct, dat_ec)
+  dat_rep <- map(1:n_rep_gamma, ~ {
+    dat_rct_boot <- dat_rct %>%
+      group_by(A) %>%
+      slice_sample(prop = 1, replace = T)
+    bind_rows(dat_rct_boot, dat_ec)
+  })
+  # est
+  est_grid <- parallel::mclapply(gamma_grid, function(g) {
+    est_one <- ec_borrow(
+      dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+      "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+      gamma_sel = g, ...
+    )$res$est[1]
+
+    est_rep <- map(dat_rep, ~ {
       est_csb <- ec_borrow(
-        dat1$Y, dat1$A, dat1$S, dat1$X,
+        .$Y, .$A, .$S, .$X,
         "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
         gamma_sel = g, ...
       )$res$est[1]
-      est_nb <- ec_borrow(
-        dat2$Y, dat2$A, dat2$S, dat2$X,
-        "No Borrow AIPW", family, n_fisher = NULL
-      )$res$est[1]
-      lst(est_csb, est_nb)
+
     })
-    var_hat <- map_dbl(est_rep, ~ {.$est_csb}) %>% var
-    bias2_hat <- mean(map_dbl(est_rep, ~ {.$est_csb - .$est_nb}), na.rm = T)^2
-    mse_hat <- var_hat + bias2_hat
-    # output
-    cat(paste0("For gamma_sel = ", g,
-               ", MSE = ", mse_hat, "\n\n"))
-    lst(mse_hat, var_hat, bias2_hat)
+    lst(est_one, est_rep)
   }, mc.cores = n_cores)
-  gamma_grid[which.min(map_dbl(res_grid, measure))]
+  # MSE
+  res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
+    var_hat <- map_dbl(est_g$est_rep, ~ .) %>% var
+    if (g == 1) {
+      bias2_hat <- 0
+    } else {
+      bias2_hat <- max(
+        (est_g$est_one - est_grid[[id_nb]]$est_one)^2 -
+          map2_dbl(est_g$est_rep, est_grid[[id_nb]]$est_rep, function(x, y) {x - y}) %>% var,
+        0
+      )
+    }
+    mse_hat <- bias2_hat + var_hat
+
+    # output
+    cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
+    lst(mse_hat, bias2_hat, var_hat)
+  })
+  gamma_grid[which.min(map_dbl(res_grid, "mse_hat"))]
 }

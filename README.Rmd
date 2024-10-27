@@ -173,6 +173,7 @@ dat_plot %>%
 
 The above figure shows that Conformal Selective Borrowing discards uncomparable ECs and borrows most of the comparable ECs, except for a few suspicious ones.
 
+
 ## Reference
 
 Zhu, Ke, Shu Yang, and Xiaofei Wang. (2024) "Enhancing Statistical Validity and Power in Hybrid Controlled Trials: A Randomization Inference Approach with Conformal Selective Borrowing." arXiv. http://arxiv.org/abs/2410.11713.
