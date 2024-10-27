@@ -34,8 +34,8 @@ You can install the development version of intFRT from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("pak")
-pak::pak("ke-zhu/intFRT")
+# install.packages("devtools")
+devtools::install_github("ke-zhu/intFRT")
 ```
 
 ## Example
@@ -134,7 +134,7 @@ print(result_csb$res, width = Inf)
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
 #> 1    40.5  0.0530
-#> 2    NA    0.496
+#> 2    NA    0.441
 ```
 
 - `est`: ATE estimate.
