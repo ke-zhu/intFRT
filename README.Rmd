@@ -77,7 +77,7 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ```{r}
 library(intFRT)
-ada_g <- compute_ada_gamma(Y, A, S, X)
+ada_g <- compute_ada_gamma(Y, A, S, X) # default `n_rep_gamma = 10`
 ada_g
 ```
 

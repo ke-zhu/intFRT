@@ -98,7 +98,7 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
   tibble(
     est = mean(d),
     se = se,
-    d
+    d = list(d)
   )
 }
 
@@ -165,7 +165,7 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
     se <- sqrt(sum((d - mean(d))^2) / n_all^2)
   }
   # output
-  tibble(est, se, ess_sel = max(0, ESS(w0) - n_rc), d)
+  tibble(est, se, ess_sel = max(0, ESS(w0) - n_rc), d = list(d))
 }
 
 fit_cf_model_mean <- function(dat_train, dat_pred, family, cf_model) {

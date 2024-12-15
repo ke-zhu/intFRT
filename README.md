@@ -76,39 +76,30 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ``` r
 library(intFRT)
-ada_g <- compute_ada_gamma(Y, A, S, X)
-#> For gamma_sel = 0, MSE = 3.02009406877217
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.1, MSE = 0.202123119515767
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.2, MSE = 0.188811976981897
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.3, MSE = 0.178675219443114
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.4, MSE = 0.144774075625022
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.5, MSE = 0.12768567184637
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.6, MSE = 0.110760514850767
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.7, MSE = 0.0999859347910325
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.8, MSE = 0.0659669326984849
-#> Warning in est_g$est_one - est_grid[[id_nb]]$est_one: longer object length is
-#> not a multiple of shorter object length
-#> For gamma_sel = 0.9, MSE = 0.0465028607316254
+ada_g <- compute_ada_gamma(Y, A, S, X) # default `n_rep_gamma = 10`
+#> For gamma_sel = 0, MSE = 0.44756173130003
 #> 
-#> For gamma_sel = 1, MSE = 0.076003315378369
+#> For gamma_sel = 0.1, MSE = 0.0577786569923681
+#> 
+#> For gamma_sel = 0.2, MSE = 0.0721770979052318
+#> 
+#> For gamma_sel = 0.3, MSE = 0.0771846127784546
+#> 
+#> For gamma_sel = 0.4, MSE = 0.0793061616331322
+#> 
+#> For gamma_sel = 0.5, MSE = 0.0870810648172806
+#> 
+#> For gamma_sel = 0.6, MSE = 0.101675332396415
+#> 
+#> For gamma_sel = 0.7, MSE = 0.136798336053251
+#> 
+#> For gamma_sel = 0.8, MSE = 0.128939751207904
+#> 
+#> For gamma_sel = 0.9, MSE = 0.115160513302737
+#> 
+#> For gamma_sel = 1, MSE = 0.119573178266935
 ada_g
-#> [1] 0.9
+#> [1] 0.1
 ```
 
 ### Fisher Randomization Test with Conformal Selective Borrowing
@@ -127,37 +118,18 @@ result_csb <- ec_borrow(
   # Recommend `n_fisher = 5000` or more
   # To perform only Conformal Selective Borrowing, set `n_fisher = NULL`
 )
-#> Warning in abs(out_frt$est) >= abs(out$est): longer object length is not a
-#> multiple of shorter object length
 
 # View results
 print(result_csb$res, width = Inf)
-#> # A tibble: 51 × 9
-#>    method                            est    se  ci_l  ci_u p_value n_sel ess_sel
-#>    <chr>                           <dbl> <dbl> <dbl> <dbl>   <dbl> <dbl>   <dbl>
-#>  1 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  2 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  3 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  4 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  5 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  6 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  7 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  8 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>  9 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#> 10 Conformal Selective Borrow AIPW 0.793 0.300 0.206  1.38 0.00812     0       0
-#>    runtime
-#>      <dbl>
-#>  1  0.0460
-#>  2  0.0460
-#>  3  0.0460
-#>  4  0.0460
-#>  5  0.0460
-#>  6  0.0460
-#>  7  0.0460
-#>  8  0.0460
-#>  9  0.0460
-#> 10  0.0460
-#> # ℹ 41 more rows
+#> # A tibble: 2 × 9
+#>   method                                 est     se   ci_l  ci_u  p_value n_sel
+#>   <chr>                                <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
+#> 1 Conformal Selective Borrow AIPW      0.855  0.250  0.366  1.34 0.000618    46
+#> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
+#>   ess_sel runtime
+#>     <dbl>   <dbl>
+#> 1    40.5  0.0520
+#> 2    NA    0.441
 ```
 
 - `est`: ATE estimate.
@@ -171,7 +143,9 @@ print(result_csb$res, width = Inf)
 ``` r
 # View IDs of borrowed external controls
 result_csb$id_sel
-#> NULL
+#>  [1]  51  52  53  54  55  56  57  58  60  62  63  64  65  66  67  68  69  70  71
+#> [20]  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  88  90  91  92
+#> [39]  93  94  95  96  97  98  99 100
 ```
 
 ### Visualize borrowed external controls
@@ -214,10 +188,6 @@ dat_plot <- tibble(Y, A, S, X, `Sampling Score`, sel) %>%
       )
   ) %>% 
   filter(Type != "RCT treated")
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `Type = `%>%`(...)`.
-#> Caused by warning:
-#> ! 1 unknown level in `f`: External control (selected)
 
 # Fit quantile regressions to visualize the main range of RCT controls
 fit975 <- rq(Y ~ `Sampling Score`, tau = 0.975, data = dat_plot, 

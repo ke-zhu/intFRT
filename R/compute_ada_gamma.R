@@ -13,8 +13,7 @@
 #' @param gamma_grid Numeric vector representing the grid of potential gamma
 #'   values to search over. Default is a sequence from 0 to 1 with 11 grids.
 #' @param n_rep_gamma Integer specifying the number of resampling iterations
-#'   for estimating the MSE given a certain gamma. Default is `NULL`, which means
-#'   using sandwich variance estimator for estimating MSE.
+#'   for estimating the MSE given a certain gamma. Default is `10`.
 #' @param parallel Logical value indicating whether to use parallel computing.
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
@@ -68,7 +67,7 @@
 compute_ada_gamma <- function(Y, A, S, X,
                               family = "gaussian",
                               gamma_grid = seq(0, 1, by = 0.1),
-                              n_rep_gamma = NULL,
+                              n_rep_gamma = 10,
                               parallel = F,
                               n_cores = parallel::detectCores(logical = FALSE),
                               ...) {
@@ -84,6 +83,7 @@ compute_ada_gamma <- function(Y, A, S, X,
   dat_ec <- tibble(Y, A, S, X) %>% filter(S == 0)
   dat_full <- bind_rows(dat_rct, dat_ec)
   n_rct <- nrow(dat_rct)
+  n_full <- nrow(dat_full)
   if (is.null(n_rep_gamma)) {
     # sandwich variance estimator
     # est
@@ -94,16 +94,18 @@ compute_ada_gamma <- function(Y, A, S, X,
         gamma_sel = g, ...
       )
       est_one <- fit$out$est
-      est_d <- fit$out$d
-      lst(est_one, est_d)
+      est_se <- fit$out$se
+      est_d <- fit$out$d[[1]]
+      lst(est_one, est_se, est_d)
     }, mc.cores = n_cores)
     # MSE
     res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
       d_g <- est_g$est_d
       d_0 <- est_grid[[id_nb]]$est_d
       d_dif <- d_g - c(d_0, rep(0, length(d_g) - length(d_0)))
-      var_dif_hat <- sum((d_dif - mean(d_dif))^2) / n_rct^2
-      var_hat <- sum((d_g - mean(d_g))^2) / n_rct^2
+      var_dif_hat <- sum((d_dif - mean(d_dif))^2) / n_rct / n_full
+      #var_hat <- sum((d_g - mean(d_g))^2) / n_rct / n_full
+      var_hat <- est_g$est_se^2
       if (g == 1) {
         bias2_hat <- 0
       } else {

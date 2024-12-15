@@ -11,7 +11,7 @@ compute_ada_gamma(
   X,
   family = "gaussian",
   gamma_grid = seq(0, 1, by = 0.1),
-  n_rep_gamma = NULL,
+  n_rep_gamma = 10,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
   ...
@@ -34,8 +34,7 @@ continuous outcomes.}
 values to search over. Default is a sequence from 0 to 1 with 11 grids.}
 
 \item{n_rep_gamma}{Integer specifying the number of resampling iterations
-for estimating the MSE given a certain gamma. Default is \code{NULL}, which means
-using sandwich variance estimator for estimating MSE.}
+for estimating the MSE given a certain gamma. Default is \code{10}.}
 
 \item{parallel}{Logical value indicating whether to use parallel computing.
 Default is \code{FALSE}.}
