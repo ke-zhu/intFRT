@@ -81,9 +81,9 @@ compute_ada_gamma <- function(Y, A, S, X,
   }
   # data
   dat_rct <- tibble(Y, A, S, X) %>% filter(S == 1)
-  n_rct <- nrow(dat_rct)
   dat_ec <- tibble(Y, A, S, X) %>% filter(S == 0)
   dat_full <- bind_rows(dat_rct, dat_ec)
+  n_rct <- nrow(dat_rct)
   if (is.null(n_rep_gamma)) {
     # sandwich variance estimator
     # est
@@ -100,9 +100,10 @@ compute_ada_gamma <- function(Y, A, S, X,
     # MSE
     res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
       d_g <- est_g$est_d
-      var_hat <- sum((d_g - mean(d_g))^2) / n_rct^2
-      d_dif <- d_g - est_grid[[id_nb]]$est_d
+      d_0 <- est_grid[[id_nb]]$est_d
+      d_dif <- d_g - c(d_0, rep(0, length(d_g) - length(d_0)))
       var_dif_hat <- sum((d_dif - mean(d_dif))^2) / n_rct^2
+      var_hat <- sum((d_g - mean(d_g))^2) / n_rct^2
       if (g == 1) {
         bias2_hat <- 0
       } else {
