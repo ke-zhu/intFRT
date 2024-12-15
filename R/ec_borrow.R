@@ -142,12 +142,7 @@
 #' result_nb$id_sel
 #'
 #' # Compute adaptive gamma (with a small n_rep_gamma for illustration)
-#' ada_g <- compute_ada_gamma(
-#'   Y, A, S, X,
-#'   # Use a small n_rep_gamma for fast illustration;
-#'   # recommend n_rep_gamma = 100 for more stable results
-#'   n_rep_gamma = 10
-#' )
+#' ada_g <- compute_ada_gamma(Y, A, S, X)
 #' ada_g
 #'
 #' # Perform Fisher Randomization Test with Conformal Selective Borrowing

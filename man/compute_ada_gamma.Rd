@@ -11,7 +11,7 @@ compute_ada_gamma(
   X,
   family = "gaussian",
   gamma_grid = seq(0, 1, by = 0.1),
-  n_rep_gamma = 100,
+  n_rep_gamma = NULL,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
   ...
@@ -34,7 +34,8 @@ continuous outcomes.}
 values to search over. Default is a sequence from 0 to 1 with 11 grids.}
 
 \item{n_rep_gamma}{Integer specifying the number of resampling iterations
-for estimating the MSE given a certain gamma. Default is 100.}
+for estimating the MSE given a certain gamma. Default is \code{NULL}, which means
+using sandwich variance estimator for estimating MSE.}
 
 \item{parallel}{Logical value indicating whether to use parallel computing.
 Default is \code{FALSE}.}
@@ -85,13 +86,8 @@ Y0[id_biased_EC] <- Y0[id_biased_EC] - 10
 # Observed outcome
 Y <- A * Y1 + (1 - A) * Y0
 
-# Compute adaptive gamma (with a small n_rep_gamma for illustration)
-ada_g <- compute_ada_gamma(
-  Y, A, S, X,
-  # Use a small n_rep_gamma for fast illustration;
-  # recommend n_rep_gamma = 100 for more stable results
-  n_rep_gamma = 10
-)
+# Compute adaptive gamma
+ada_g <- compute_ada_gamma(Y, A, S, X)
 ada_g
 
 }

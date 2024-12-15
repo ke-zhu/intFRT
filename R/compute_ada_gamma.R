@@ -13,7 +13,8 @@
 #' @param gamma_grid Numeric vector representing the grid of potential gamma
 #'   values to search over. Default is a sequence from 0 to 1 with 11 grids.
 #' @param n_rep_gamma Integer specifying the number of resampling iterations
-#'   for estimating the MSE given a certain gamma. Default is 100.
+#'   for estimating the MSE given a certain gamma. Default is `NULL`, which means
+#'   using sandwich variance estimator for estimating MSE.
 #' @param parallel Logical value indicating whether to use parallel computing.
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
@@ -56,13 +57,8 @@
 #' # Observed outcome
 #' Y <- A * Y1 + (1 - A) * Y0
 #'
-#' # Compute adaptive gamma (with a small n_rep_gamma for illustration)
-#' ada_g <- compute_ada_gamma(
-#'   Y, A, S, X,
-#'   # Use a small n_rep_gamma for fast illustration;
-#'   # recommend n_rep_gamma = 100 for more stable results
-#'   n_rep_gamma = 10
-#' )
+#' # Compute adaptive gamma
+#' ada_g <- compute_ada_gamma(Y, A, S, X)
 #' ada_g
 #'
 #' @import tibble
@@ -72,7 +68,7 @@
 compute_ada_gamma <- function(Y, A, S, X,
                               family = "gaussian",
                               gamma_grid = seq(0, 1, by = 0.1),
-                              n_rep_gamma = 100,
+                              n_rep_gamma = NULL,
                               parallel = F,
                               n_cores = parallel::detectCores(logical = FALSE),
                               ...) {
@@ -85,49 +81,87 @@ compute_ada_gamma <- function(Y, A, S, X,
   }
   # data
   dat_rct <- tibble(Y, A, S, X) %>% filter(S == 1)
+  n_rct <- nrow(dat_rct)
   dat_ec <- tibble(Y, A, S, X) %>% filter(S == 0)
   dat_full <- bind_rows(dat_rct, dat_ec)
-  dat_rep <- map(1:n_rep_gamma, ~ {
-    dat_rct_boot <- dat_rct %>%
-      group_by(A) %>%
-      slice_sample(prop = 1, replace = T)
-    bind_rows(dat_rct_boot, dat_ec)
-  })
-  # est
-  est_grid <- parallel::mclapply(gamma_grid, function(g) {
-    est_one <- ec_borrow(
-      dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-      "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
-      gamma_sel = g, ...
-    )$res$est[1]
+  if (is.null(n_rep_gamma)) {
+    # sandwich variance estimator
+    # est
+    est_grid <- parallel::mclapply(gamma_grid, function(g) {
+      fit <- ec_borrow(
+        dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+        "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+        gamma_sel = g, ...
+      )
+      est_one <- fit$out$est
+      est_d <- fit$out$d
+      lst(est_one, est_d)
+    }, mc.cores = n_cores)
+    # MSE
+    res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
+      d_g <- est_g$est_d
+      var_hat <- sum((d_g - mean(d_g))^2) / n_rct^2
+      d_dif <- d_g - est_grid[[id_nb]]$est_d
+      var_dif_hat <- sum((d_dif - mean(d_dif))^2) / n_rct^2
+      if (g == 1) {
+        bias2_hat <- 0
+      } else {
+        bias2_hat <- max(
+          (est_g$est_one - est_grid[[id_nb]]$est_one)^2 - var_dif_hat,
+          0
+        )
+      }
+      mse_hat <- bias2_hat + var_hat
 
-    est_rep <- map(dat_rep, ~ {
-      est_csb <- ec_borrow(
-        .$Y, .$A, .$S, .$X,
+      # output
+      cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
+      lst(mse_hat, bias2_hat, var_hat)
+    })
+  } else {
+    # bootstrap variance estimator
+    dat_rep <- map(1:n_rep_gamma, ~ {
+      dat_rct_boot <- dat_rct %>%
+        group_by(A) %>%
+        slice_sample(prop = 1, replace = T)
+      bind_rows(dat_rct_boot, dat_ec)
+    })
+    # est
+    est_grid <- parallel::mclapply(gamma_grid, function(g) {
+      est_one <- ec_borrow(
+        dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
         "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
         gamma_sel = g, ...
       )$res$est[1]
 
-    })
-    lst(est_one, est_rep)
-  }, mc.cores = n_cores)
-  # MSE
-  res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
-    var_hat <- map_dbl(est_g$est_rep, ~ .) %>% var
-    if (g == 1) {
-      bias2_hat <- 0
-    } else {
-      bias2_hat <- max(
-        (est_g$est_one - est_grid[[id_nb]]$est_one)^2 -
-          map2_dbl(est_g$est_rep, est_grid[[id_nb]]$est_rep, function(x, y) {x - y}) %>% var,
-        0
-      )
-    }
-    mse_hat <- bias2_hat + var_hat
+      est_rep <- map(dat_rep, ~ {
+        est_csb <- ec_borrow(
+          .$Y, .$A, .$S, .$X,
+          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+          gamma_sel = g, ...
+        )$res$est[1]
 
-    # output
-    cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
-    lst(mse_hat, bias2_hat, var_hat)
-  })
+      })
+      lst(est_one, est_rep)
+    }, mc.cores = n_cores)
+    # MSE
+    res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
+      var_hat <- map_dbl(est_g$est_rep, ~ .) %>% var
+      if (g == 1) {
+        bias2_hat <- 0
+      } else {
+        bias2_hat <- max(
+          (est_g$est_one - est_grid[[id_nb]]$est_one)^2 -
+            map2_dbl(est_g$est_rep, est_grid[[id_nb]]$est_rep, function(x, y) {x - y}) %>% var,
+          0
+        )
+      }
+      mse_hat <- bias2_hat + var_hat
+
+      # output
+      cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
+      lst(mse_hat, bias2_hat, var_hat)
+    })
+  }
+
   gamma_grid[which.min(map_dbl(res_grid, "mse_hat"))]
 }
