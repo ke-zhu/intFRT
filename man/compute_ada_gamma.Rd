@@ -14,6 +14,8 @@ compute_ada_gamma(
   n_rep_gamma = 10,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
+  opt = "MSE",
+  sig_level = 0.05,
   ...
 )
 }
@@ -42,6 +44,12 @@ Default is \code{FALSE}.}
 \item{n_cores}{Integer specifying the number of cores to use for parallel
 computing. Default is the number of available physical cores on the
 machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
+
+\item{opt}{Character specifying the criterion to determine gamma. Options are
+"MSE" or "power". Default is "MSE".}
+
+\item{sig_level}{Numeric value indicating the significance level for
+hypothesis tests when \code{opt = "power"}. Default is 0.05.}
 
 \item{...}{Additional arguments passed to the internal \code{ec_borrow} function.}
 }
