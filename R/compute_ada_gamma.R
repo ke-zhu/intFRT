@@ -90,7 +90,7 @@ compute_ada_gamma <- function(Y, A, S, X,
   dat_full <- bind_rows(dat_rct, dat_ec)
   n_rct <- nrow(dat_rct)
   n_full <- nrow(dat_full)
-  if (opt == "MSE") {
+  if (opt == "mse") {
     if (is.null(n_rep_gamma)) {
       # sandwich variance estimator
       # est
