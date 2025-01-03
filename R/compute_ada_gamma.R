@@ -20,7 +20,7 @@
 #'   computing. Default is the number of available physical cores on the
 #'   machine, as determined by `parallel::detectCores(logical = FALSE)`.
 #' @param opt Character specifying the criterion to determine gamma. Options are
-#' "MSE" or "power". Default is "MSE".
+#' "power" or "mse". Default is "power".
 #' @param sig_level Numeric value indicating the significance level for
 #' hypothesis tests when `opt = "power"`. Default is 0.05.
 #' @param ... Additional arguments passed to the internal `ec_borrow` function.
@@ -74,7 +74,7 @@ compute_ada_gamma <- function(Y, A, S, X,
                               n_rep_gamma = 10,
                               parallel = F,
                               n_cores = parallel::detectCores(logical = FALSE),
-                              opt = "MSE",
+                              opt = "power",
                               sig_level = 0.05,
                               ...) {
   if (!parallel) {n_cores <- 1}
@@ -224,9 +224,12 @@ compute_ada_gamma <- function(Y, A, S, X,
       critical_value <- quantile(abs(T_H0), probs = 1 - sig_level)
       power_hat_g <- mean(T_H1 > critical_value) # estimated power
       # output
-      cat(paste0("For gamma_sel = ", g, ", power = ", power_hat_g, "\n\n"))
       power_hat_g
     }, mc.cores = n_cores) %>% map_dbl(~.)
+    # print
+    walk2(gamma_grid, power_hat, function(g, power_hat_g) {
+      cat(paste0("For gamma_sel = ", g, ", power = ", power_hat_g, "\n\n"))
+    })
     # output
     gamma_grid[which.max(power_hat)]
   }

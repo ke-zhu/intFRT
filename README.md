@@ -76,28 +76,30 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ``` r
 library(intFRT)
-ada_g <- compute_ada_gamma(Y, A, S, X) # default `n_rep_gamma = 10`
-#> For gamma_sel = 0, MSE = 0.44756173130003
+# Default is `n_rep_gamma = 10`
+# Recommend setting `n_rep_gamma = 100` if computationally feasible
+ada_g <- compute_ada_gamma(Y, A, S, X, n_rep_gamma = 100, parallel = T) 
+#> For gamma_sel = 0, power = 0.83
 #> 
-#> For gamma_sel = 0.1, MSE = 0.0577786569923681
+#> For gamma_sel = 0.1, power = 0.89
 #> 
-#> For gamma_sel = 0.2, MSE = 0.0721770979052318
+#> For gamma_sel = 0.2, power = 0.81
 #> 
-#> For gamma_sel = 0.3, MSE = 0.0771846127784546
+#> For gamma_sel = 0.3, power = 0.77
 #> 
-#> For gamma_sel = 0.4, MSE = 0.0793061616331322
+#> For gamma_sel = 0.4, power = 0.69
 #> 
-#> For gamma_sel = 0.5, MSE = 0.0870810648172806
+#> For gamma_sel = 0.5, power = 0.85
 #> 
-#> For gamma_sel = 0.6, MSE = 0.101675332396415
+#> For gamma_sel = 0.6, power = 0.74
 #> 
-#> For gamma_sel = 0.7, MSE = 0.136798336053251
+#> For gamma_sel = 0.7, power = 0.77
 #> 
-#> For gamma_sel = 0.8, MSE = 0.128939751207904
+#> For gamma_sel = 0.8, power = 0.8
 #> 
-#> For gamma_sel = 0.9, MSE = 0.115160513302737
+#> For gamma_sel = 0.9, power = 0.77
 #> 
-#> For gamma_sel = 1, MSE = 0.119573178266935
+#> For gamma_sel = 1, power = 0.78
 ada_g
 #> [1] 0.1
 ```
@@ -128,8 +130,8 @@ print(result_csb$res, width = Inf)
 #> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    40.5  0.0520
-#> 2    NA    0.441
+#> 1    40.5  0.0910
+#> 2    NA    0.437
 ```
 
 - `est`: ATE estimate.
@@ -207,7 +209,7 @@ dat_plot %>%
   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
 ```
 
-<img src="man/figures/README-example-1.svg" width="100%" />
+<img src="man/figures/README-vis-1.svg" width="100%" />
 
 The above figure shows that Conformal Selective Borrowing discards
 uncomparable ECs and borrows most of the comparable ECs, except for a
