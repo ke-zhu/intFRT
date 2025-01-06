@@ -76,30 +76,29 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ``` r
 library(intFRT)
-# Default is `n_rep_gamma = 10`
-# Recommend setting `n_rep_gamma = 100` if computationally feasible
-ada_g <- compute_ada_gamma(Y, A, S, X, n_rep_gamma = 100, parallel = T) 
-#> For gamma_sel = 0, power = 0.83
+# This process may take a few minutes
+ada_g <- compute_ada_gamma(Y, A, S, X, n_rep_gamma = 100, parallel = T)
+#> For gamma_sel = 0, MSE = 0.410769542816223
 #> 
-#> For gamma_sel = 0.1, power = 0.89
+#> For gamma_sel = 0.1, MSE = 0.0660237150853648
 #> 
-#> For gamma_sel = 0.2, power = 0.81
+#> For gamma_sel = 0.2, MSE = 0.0728050666481874
 #> 
-#> For gamma_sel = 0.3, power = 0.77
+#> For gamma_sel = 0.3, MSE = 0.0790533284966379
 #> 
-#> For gamma_sel = 0.4, power = 0.69
+#> For gamma_sel = 0.4, MSE = 0.0832620248504473
 #> 
-#> For gamma_sel = 0.5, power = 0.85
+#> For gamma_sel = 0.5, MSE = 0.0873948333047626
 #> 
-#> For gamma_sel = 0.6, power = 0.74
+#> For gamma_sel = 0.6, MSE = 0.0938282060868959
 #> 
-#> For gamma_sel = 0.7, power = 0.77
+#> For gamma_sel = 0.7, MSE = 0.0945935219639471
 #> 
-#> For gamma_sel = 0.8, power = 0.8
+#> For gamma_sel = 0.8, MSE = 0.103714561262296
 #> 
-#> For gamma_sel = 0.9, power = 0.77
+#> For gamma_sel = 0.9, MSE = 0.0997914984144095
 #> 
-#> For gamma_sel = 1, power = 0.78
+#> For gamma_sel = 1, MSE = 0.0987484479886673
 ada_g
 #> [1] 0.1
 ```
@@ -130,8 +129,8 @@ print(result_csb$res, width = Inf)
 #> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    40.5  0.0910
-#> 2    NA    0.437
+#> 1    40.5  0.0940
+#> 2    NA    0.447
 ```
 
 - `est`: ATE estimate.

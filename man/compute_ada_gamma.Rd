@@ -14,7 +14,7 @@ compute_ada_gamma(
   n_rep_gamma = 10,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
-  opt = "power",
+  opt = "mse",
   sig_level = 0.05,
   ...
 )
@@ -46,7 +46,7 @@ computing. Default is the number of available physical cores on the
 machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
 
 \item{opt}{Character specifying the criterion to determine gamma. Options are
-"power" or "mse". Default is "power".}
+"power" or "mse". Default is "mse".}
 
 \item{sig_level}{Numeric value indicating the significance level for
 hypothesis tests when \code{opt = "power"}. Default is 0.05.}
