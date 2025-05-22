@@ -77,8 +77,12 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ```{r ada_g}
 library(intFRT)
-# This process may take a few minutes
-ada_g <- compute_ada_gamma(Y, A, S, X, n_rep_gamma = 100, parallel = T)
+ada_g <- compute_ada_gamma(
+  Y, A, S, X, 
+  # Tuning with 10 replications for illustration purposes
+  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+  n_rep_gamma = 10
+)
 ada_g
 ```
 
@@ -95,9 +99,9 @@ result_csb <- ec_borrow(
   family = "gaussian",
   gamma_sel = ada_g,
   # FRT with 10 randomizations for illustration
-  n_fisher = 10
   # Recommend `n_fisher = 5000` or more
   # To perform only Conformal Selective Borrowing, set `n_fisher = NULL`
+  n_fisher = 10
 )
 
 # View results
@@ -111,7 +115,7 @@ print(result_csb$res, width = Inf)
 - `ess_sel`: The effective sample size of borrowed external controls.
 - `runtime`: The computation time.
 
-```{r ec}
+```{r ecs}
 # View IDs of borrowed external controls
 result_csb$id_sel
 ```
@@ -158,6 +162,7 @@ fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot,
              subset = dat_plot$Type == "RCT control")
 dat_plot$pred025 <- predict(fit025, newdata = dat_plot)
 
+
 # Plot results
 dat_plot %>% 
   ggplot() +
@@ -167,9 +172,12 @@ dat_plot %>%
   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
 ```
 
-The above figure shows that Conformal Selective Borrowing discards uncomparable ECs and borrows most of the comparable ECs, except for a few suspicious ones.
+The above figure shows that Conformal Selective Borrowing discards incomparable ECs and borrows most of the comparable ones, except for a few suspicious ones.
 
 
 ## Reference
 
-Zhu, Ke, Shu Yang, and Xiaofei Wang. (2024) "Enhancing Statistical Validity and Power in Hybrid Controlled Trials: A Randomization Inference Approach with Conformal Selective Borrowing." arXiv. http://arxiv.org/abs/2410.11713.
+Ke Zhu, Shu Yang, and Xiaofei Wang (2025). [Enhancing statistical validity and power in hybrid controlled trials: A randomization inference approach with conformal selective borrowing.](https://arxiv.org/abs/2410.11713) *Proceedings of the 42nd International Conference on Machine Learning (ICML)*, PMLR, in press. [[Slides]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing) [[Poster]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
+
+
+

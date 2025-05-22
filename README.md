@@ -4,6 +4,7 @@
 # intFRT
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of **intFRT** is to **int**egrate randomized controlled trials
@@ -76,29 +77,33 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ``` r
 library(intFRT)
-# This process may take a few minutes
-ada_g <- compute_ada_gamma(Y, A, S, X, n_rep_gamma = 100, parallel = T)
-#> For gamma_sel = 0, MSE = 0.410769542816223
+ada_g <- compute_ada_gamma(
+  Y, A, S, X, 
+  # Tuning with 10 replications for illustration purposes
+  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+  n_rep_gamma = 10
+)
+#> For gamma_sel = 0, MSE = 0.44756173130003
 #> 
-#> For gamma_sel = 0.1, MSE = 0.0660237150853648
+#> For gamma_sel = 0.1, MSE = 0.0577786569923681
 #> 
-#> For gamma_sel = 0.2, MSE = 0.0728050666481874
+#> For gamma_sel = 0.2, MSE = 0.0721770979052318
 #> 
-#> For gamma_sel = 0.3, MSE = 0.0790533284966379
+#> For gamma_sel = 0.3, MSE = 0.0771846127784546
 #> 
-#> For gamma_sel = 0.4, MSE = 0.0832620248504473
+#> For gamma_sel = 0.4, MSE = 0.0793061616331322
 #> 
-#> For gamma_sel = 0.5, MSE = 0.0873948333047626
+#> For gamma_sel = 0.5, MSE = 0.0870810648172806
 #> 
-#> For gamma_sel = 0.6, MSE = 0.0938282060868959
+#> For gamma_sel = 0.6, MSE = 0.101675332396415
 #> 
-#> For gamma_sel = 0.7, MSE = 0.0945935219639471
+#> For gamma_sel = 0.7, MSE = 0.136798336053251
 #> 
-#> For gamma_sel = 0.8, MSE = 0.103714561262296
+#> For gamma_sel = 0.8, MSE = 0.128939751207904
 #> 
-#> For gamma_sel = 0.9, MSE = 0.0997914984144095
+#> For gamma_sel = 0.9, MSE = 0.115160513302737
 #> 
-#> For gamma_sel = 1, MSE = 0.0987484479886673
+#> For gamma_sel = 1, MSE = 0.119573178266935
 ada_g
 #> [1] 0.1
 ```
@@ -115,9 +120,9 @@ result_csb <- ec_borrow(
   family = "gaussian",
   gamma_sel = ada_g,
   # FRT with 10 randomizations for illustration
-  n_fisher = 10
   # Recommend `n_fisher = 5000` or more
   # To perform only Conformal Selective Borrowing, set `n_fisher = NULL`
+  n_fisher = 10
 )
 
 # View results
@@ -125,12 +130,12 @@ print(result_csb$res, width = Inf)
 #> # A tibble: 2 × 9
 #>   method                                 est     se   ci_l  ci_u  p_value n_sel
 #>   <chr>                                <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
-#> 1 Conformal Selective Borrow AIPW      0.855  0.250  0.366  1.34 0.000618    46
+#> 1 Conformal Selective Borrow AIPW      0.855  0.235  0.395  1.32 0.000272    46
 #> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    40.5  0.0940
-#> 2    NA    0.447
+#> 1    40.5  0.0520
+#> 2    NA    0.454
 ```
 
 - `est`: ATE estimate.
@@ -199,6 +204,7 @@ fit025 <- rq(Y ~ `Sampling Score`, tau = 0.025, data = dat_plot,
              subset = dat_plot$Type == "RCT control")
 dat_plot$pred025 <- predict(fit025, newdata = dat_plot)
 
+
 # Plot results
 dat_plot %>% 
   ggplot() +
@@ -211,12 +217,15 @@ dat_plot %>%
 <img src="man/figures/README-vis-1.svg" width="100%" />
 
 The above figure shows that Conformal Selective Borrowing discards
-uncomparable ECs and borrows most of the comparable ECs, except for a
+incomparable ECs and borrows most of the comparable ones, except for a
 few suspicious ones.
 
 ## Reference
 
-Zhu, Ke, Shu Yang, and Xiaofei Wang. (2024) “Enhancing Statistical
-Validity and Power in Hybrid Controlled Trials: A Randomization
-Inference Approach with Conformal Selective Borrowing.” arXiv.
-<http://arxiv.org/abs/2410.11713>.
+Ke Zhu, Shu Yang, and Xiaofei Wang (2025). [Enhancing statistical
+validity and power in hybrid controlled trials: A randomization
+inference approach with conformal selective
+borrowing.](https://arxiv.org/abs/2410.11713) *Proceedings of the 42nd
+International Conference on Machine Learning (ICML)*, PMLR, in press.
+[\[Slides\]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing)
+[\[Poster\]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
