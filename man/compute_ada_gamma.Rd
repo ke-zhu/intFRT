@@ -11,7 +11,7 @@ compute_ada_gamma(
   X,
   family = "gaussian",
   gamma_grid = seq(0, 1, by = 0.1),
-  n_rep_gamma = 10,
+  n_rep_gamma = 100,
   parallel = F,
   n_cores = parallel::detectCores(logical = FALSE),
   opt = "mse",
