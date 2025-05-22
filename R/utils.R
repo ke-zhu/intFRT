@@ -160,10 +160,13 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   # compute se
   if (small_n_adj) {
     dof <- max(n_all - ncol(dat$X) * 3, 1)
-    se <- sqrt(sum((d - mean(d))^2) / dof^2)
+    #se <- sqrt(sum((d - mean(d))^2) / dof^2)
   } else {
-    se <- sqrt(sum((d - mean(d))^2) / n_all^2)
+    #se <- sqrt(sum((d - mean(d))^2) / n_all^2)
+    dof <- n_all
   }
+  se_i <- d - dat$S / (n_rct / n_all) * mean(d)
+  se <- sqrt(sum(se_i^2) / dof^2)
   # output
   tibble(est, se, ess_sel = max(0, ESS(w0) - n_rc), d = list(d))
 }
