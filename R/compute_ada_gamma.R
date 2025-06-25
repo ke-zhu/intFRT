@@ -61,7 +61,12 @@
 #' Y <- A * Y1 + (1 - A) * Y0
 #'
 #' # Compute adaptive gamma
-#' ada_g <- compute_ada_gamma(Y, A, S, X)
+#' ada_g <- compute_ada_gamma(
+#'   Y, A, S, X,
+#'   # Tuning with 20 replications for illustration purposes
+#'   # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+#'   n_rep_gamma = 20
+#' )
 #' ada_g
 #'
 #' @import tibble
@@ -72,13 +77,17 @@ compute_ada_gamma <- function(Y, A, S, X,
                               family = "gaussian",
                               gamma_grid = seq(0, 1, by = 0.1),
                               n_rep_gamma = 100,
-                              parallel = F,
-                              n_cores = future::availableCores(logical = FALSE),
+                              parallel = FALSE,
+                              n_cores = NULL,
                               opt = "mse",
                               sig_level = 0.05,
                               ...) {
   if (parallel) {
     future::plan(multisession, workers = n_cores)
+
+    if (is.null(n_cores)) {
+      n_cores <- future::availableCores(logical = FALSE)
+    }
   }
 
   if (any(gamma_grid == 1)) {
@@ -95,19 +104,35 @@ compute_ada_gamma <- function(Y, A, S, X,
   n_full <- nrow(dat_full)
   if (opt == "mse") {
     if (is.null(n_rep_gamma)) {
-      # sandwich variance estimator
+      # sandwich variance estimator, not recommend for this purpose
+
       # est
-      est_grid <- furrr::future_map(gamma_grid, function(g) {
-        fit <- ec_borrow(
-          dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
-          gamma_sel = g, ...
-        )
-        est_one <- fit$out$est
-        est_se <- fit$out$se
-        est_d <- fit$out$d[[1]]
-        lst(est_one, est_se, est_d)
-      })
+      if (parallel) {
+        est_grid <- furrr::future_map(gamma_grid, function(g) {
+          fit <- ec_borrow(
+            dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            gamma_sel = g, ...
+          )
+          est_one <- fit$out$est
+          est_se <- fit$out$se
+          est_d <- fit$out$d[[1]]
+          lst(est_one, est_se, est_d)
+        }, .options = furrr::furrr_options(seed = TRUE))
+      } else {
+        est_grid <- map(gamma_grid, function(g) {
+          fit <- ec_borrow(
+            dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            gamma_sel = g, ...
+          )
+          est_one <- fit$out$est
+          est_se <- fit$out$se
+          est_d <- fit$out$d[[1]]
+          lst(est_one, est_se, est_d)
+        })
+      }
+
       # MSE
       res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
         d_g <- est_g$est_d
@@ -139,23 +164,44 @@ compute_ada_gamma <- function(Y, A, S, X,
         bind_rows(dat_rct_boot, dat_ec)
       })
       # est
-      est_grid <- furrr::future_map(gamma_grid, function(g) {
-        est_one <- ec_borrow(
-          dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
-          gamma_sel = g, ...
-        )$res$est[1]
-
-        est_rep <- map(dat_rep, ~ {
-          est_csb <- ec_borrow(
-            .$Y, .$A, .$S, .$X,
+      if (parallel) {
+        est_grid <- furrr::future_map(gamma_grid, function(g) {
+          est_one <- ec_borrow(
+            dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
             "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
             gamma_sel = g, ...
           )$res$est[1]
 
+          est_rep <- map(dat_rep, ~ {
+            est_csb <- ec_borrow(
+              .$Y, .$A, .$S, .$X,
+              "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+              gamma_sel = g, ...
+            )$res$est[1]
+
+          })
+          lst(est_one, est_rep)
+        }, .options = furrr::furrr_options(seed = TRUE))
+      } else {
+        est_grid <- map(gamma_grid, function(g) {
+          est_one <- ec_borrow(
+            dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            gamma_sel = g, ...
+          )$res$est[1]
+
+          est_rep <- map(dat_rep, ~ {
+            est_csb <- ec_borrow(
+              .$Y, .$A, .$S, .$X,
+              "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+              gamma_sel = g, ...
+            )$res$est[1]
+
+          })
+          lst(est_one, est_rep)
         })
-        lst(est_one, est_rep)
-      })
+      }
+
       # MSE
       res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
         var_hat <- map_dbl(est_g$est_rep, ~ .) %>% var
@@ -171,64 +217,120 @@ compute_ada_gamma <- function(Y, A, S, X,
         mse_hat <- bias2_hat + var_hat
 
         # output
-        cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
+        #cat(paste0("For gamma_sel = ", g, ", MSE = ", mse_hat, "\n\n"))
+        cat(sprintf("Gamma = %.2f | MSE = %.4f\n", g, mse_hat))
         lst(mse_hat, bias2_hat, var_hat)
       })
     }
     # output
     gamma_grid[which.min(map_dbl(res_grid, "mse_hat"))]
   } else if (opt == "power") {
-    power_hat <- furrr::future_map(gamma_grid, function(g) {
-      # distribution of T under H0
-      res_H0 <- ec_borrow(
-        dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-        "Conformal Selective Borrow AIPW", family, n_fisher = n_rep_gamma,
-        gamma_sel = g, output_frt = TRUE
-      )
-      T_H0 <- res_H0$out_frt$est
-      # CATE estimation
-      #taux <- mean(dat_rct$Y[dat_rct$A == 1]) - mean(dat_rct$Y[dat_rct$A == 0])
-      cate_fit <- grf::causal_forest(X = dat_rct$X, Y = dat_rct$Y,
-                                         W = dat_rct$A)
-      cate <- predict(cate_fit)
-      taux <- cate$predictions
-      # impute potential outcome under H1
-      dat_imp_H1 <- dat_full %>%
-        mutate(
-          Y1 = case_when(
-            A == 1 ~ Y,
-            A == 0 ~ Y + taux
-          ),
-          Y0 = case_when(
-            A == 0 ~ Y,
-            A == 1 ~ Y - taux
-          )
-        )
-      # distribution of T under H0
-      T_H1 <- map_dbl(1:n_rep_gamma, ~ {
-        dat_H1 <- dat_imp_H1 %>%
-          mutate(
-            A = {A[S == 1] <- sample(A[S == 1]); A},
-            Y = A * Y1 + (1 - A) * Y0
-          )
-        res_H1 <- ec_borrow(
-          dat_H1$Y, dat_H1$A, dat_H1$S, dat_H1$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+    if (parallel) {
+      power_hat <- furrr::future_map(gamma_grid, function(g) {
+        # distribution of T under H0
+        res_H0 <- ec_borrow(
+          dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+          "Conformal Selective Borrow AIPW", family, n_fisher = n_rep_gamma,
           gamma_sel = g, output_frt = TRUE
         )
-        res_H1$res$est[1]
-      })
-      # bind_rows(
-      #   tibble(type = "H0", t = T_H0),
-      #   tibble(type = "H1", t = T_H1)
-      # ) %>%
-      #   ggplot(aes(t, fill = type)) +
-      #   geom_histogram()
-      critical_value <- quantile(abs(T_H0), probs = 1 - sig_level)
-      power_hat_g <- mean(T_H1 > critical_value) # estimated power
-      # output
-      power_hat_g
-    }) %>% map_dbl(~.)
+        T_H0 <- res_H0$out_frt$est
+        # CATE estimation
+        #taux <- mean(dat_rct$Y[dat_rct$A == 1]) - mean(dat_rct$Y[dat_rct$A == 0])
+        cate_fit <- grf::causal_forest(X = dat_rct$X, Y = dat_rct$Y,
+                                       W = dat_rct$A)
+        cate <- predict(cate_fit)
+        taux <- cate$predictions
+        # impute potential outcome under H1
+        dat_imp_H1 <- dat_full %>%
+          mutate(
+            Y1 = case_when(
+              A == 1 ~ Y,
+              A == 0 ~ Y + taux
+            ),
+            Y0 = case_when(
+              A == 0 ~ Y,
+              A == 1 ~ Y - taux
+            )
+          )
+        # distribution of T under H0
+        T_H1 <- map_dbl(1:n_rep_gamma, ~ {
+          dat_H1 <- dat_imp_H1 %>%
+            mutate(
+              A = {A[S == 1] <- sample(A[S == 1]); A},
+              Y = A * Y1 + (1 - A) * Y0
+            )
+          res_H1 <- ec_borrow(
+            dat_H1$Y, dat_H1$A, dat_H1$S, dat_H1$X,
+            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            gamma_sel = g, output_frt = TRUE
+          )
+          res_H1$res$est[1]
+        })
+        # bind_rows(
+        #   tibble(type = "H0", t = T_H0),
+        #   tibble(type = "H1", t = T_H1)
+        # ) %>%
+        #   ggplot(aes(t, fill = type)) +
+        #   geom_histogram()
+        critical_value <- quantile(abs(T_H0), probs = 1 - sig_level)
+        power_hat_g <- mean(T_H1 > critical_value) # estimated power
+        # output
+        power_hat_g
+      }, .options = furrr::furrr_options(seed = TRUE)) %>% map_dbl(~.)
+    } else {
+      power_hat <- map(gamma_grid, function(g) {
+        # distribution of T under H0
+        res_H0 <- ec_borrow(
+          dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
+          "Conformal Selective Borrow AIPW", family, n_fisher = n_rep_gamma,
+          gamma_sel = g, output_frt = TRUE
+        )
+        T_H0 <- res_H0$out_frt$est
+        # CATE estimation
+        #taux <- mean(dat_rct$Y[dat_rct$A == 1]) - mean(dat_rct$Y[dat_rct$A == 0])
+        cate_fit <- grf::causal_forest(X = dat_rct$X, Y = dat_rct$Y,
+                                       W = dat_rct$A)
+        cate <- predict(cate_fit)
+        taux <- cate$predictions
+        # impute potential outcome under H1
+        dat_imp_H1 <- dat_full %>%
+          mutate(
+            Y1 = case_when(
+              A == 1 ~ Y,
+              A == 0 ~ Y + taux
+            ),
+            Y0 = case_when(
+              A == 0 ~ Y,
+              A == 1 ~ Y - taux
+            )
+          )
+        # distribution of T under H0
+        T_H1 <- map_dbl(1:n_rep_gamma, ~ {
+          dat_H1 <- dat_imp_H1 %>%
+            mutate(
+              A = {A[S == 1] <- sample(A[S == 1]); A},
+              Y = A * Y1 + (1 - A) * Y0
+            )
+          res_H1 <- ec_borrow(
+            dat_H1$Y, dat_H1$A, dat_H1$S, dat_H1$X,
+            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            gamma_sel = g, output_frt = TRUE
+          )
+          res_H1$res$est[1]
+        })
+        # bind_rows(
+        #   tibble(type = "H0", t = T_H0),
+        #   tibble(type = "H1", t = T_H1)
+        # ) %>%
+        #   ggplot(aes(t, fill = type)) +
+        #   geom_histogram()
+        critical_value <- quantile(abs(T_H0), probs = 1 - sig_level)
+        power_hat_g <- mean(T_H1 > critical_value) # estimated power
+        # output
+        power_hat_g
+      }) %>% map_dbl(~.)
+    }
+
     # print
     walk2(gamma_grid, power_hat, function(g, power_hat_g) {
       cat(paste0("For gamma_sel = ", g, ", power = ", power_hat_g, "\n\n"))

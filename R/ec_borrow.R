@@ -148,8 +148,12 @@
 #' result_nb$id_sel
 #'
 #' # Compute adaptive gamma (with a small n_rep_gamma for illustration)
-#' ada_g <- compute_ada_gamma(Y, A, S, X)
-#' ada_g
+#' ada_g <- compute_ada_gamma(
+#'   Y, A, S, X,
+#'   # Tuning with 20 replications for illustration purposes
+#'   # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+#'   n_rep_gamma = 20
+#' )
 #'
 #' # Perform Fisher Randomization Test with Conformal Selective Borrowing
 #' result_csb <- ec_borrow(
@@ -247,13 +251,16 @@ ec_borrow <- function(
     small_n_adj = TRUE,
     # computing & output
     parallel = FALSE,
-    n_cores = future::availableCores(logical = FALSE),
+    n_cores = NULL,
     output_frt = FALSE
 ) {
   if (parallel) {
     rlang::check_installed("future", reason = "to set execution plan for `furrr`")
     rlang::check_installed("furrr", reason = "to use `furrr::future_map()` for parallel execution")
     future::plan(multisession, workers = n_cores)
+    if (is.null(n_cores)) {
+      n_cores <- future::availableCores(logical = FALSE)
+    }
   }
 
   if ("ral" %in% c(outcome_model, sampling_model))
@@ -654,7 +661,7 @@ ec_borrow <- function(
             }, error = function(e) {
               NA
             })
-          }) %>%
+          }, .options = furrr::furrr_options(seed = TRUE)) %>%
             map_dbl(~.)
         } else {
           out_boot <- map_dbl(1:n_boot, ~ {
@@ -757,11 +764,8 @@ ec_borrow <- function(
             }, error = function(e) {
               NULL
             })
-          }) %>%
-            map_dfr(~.) %>%
-            mutate(
-              cond = floor(map_dbl(id_sel, length) / 10) == floor(res$n_sel / 10)
-            )
+          }, .options = furrr::furrr_options(seed = TRUE)) %>%
+            map_dfr(~.)
         } else {
           # randomization
           out_frt <- map_dfr(1:n_fisher, ~{

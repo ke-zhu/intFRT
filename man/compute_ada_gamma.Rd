@@ -12,8 +12,8 @@ compute_ada_gamma(
   family = "gaussian",
   gamma_grid = seq(0, 1, by = 0.1),
   n_rep_gamma = 100,
-  parallel = F,
-  n_cores = future::availableCores(logical = FALSE),
+  parallel = FALSE,
+  n_cores = NULL,
   opt = "mse",
   sig_level = 0.05,
   ...
@@ -94,7 +94,12 @@ Y0[id_biased_EC] <- Y0[id_biased_EC] - 10
 Y <- A * Y1 + (1 - A) * Y0
 
 # Compute adaptive gamma
-ada_g <- compute_ada_gamma(Y, A, S, X)
+ada_g <- compute_ada_gamma(
+  Y, A, S, X,
+  # Tuning with 20 replications for illustration purposes
+  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+  n_rep_gamma = 20
+)
 ada_g
 
 }

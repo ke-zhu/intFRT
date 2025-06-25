@@ -237,7 +237,7 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
       dat %>% filter(A == 0, S == 0),
       family, outcome_model
     )
-    y0_ec <- dat %>% filter(A == 0, S == 1) %>% pull(Y)
+    y0_ec <- dat %>% filter(A == 0, S == 0) %>% pull(Y)
     r0 <- var(y0_ec - m0_ec)
 
     r <- min(r1 / r0, max_r)

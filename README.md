@@ -47,7 +47,7 @@ and Conformal Selective Borrowing methods in hybrid controlled trials.
 ### Simulate data for a hybrid controlled trial
 
 ``` r
-set.seed(1)
+set.seed(2025)
 n_rct <- 50  # Number of observations in the randomized controlled trial
 n_ec <- 100  # Number of external controls
 n <- n_rct + n_ec  # Total number of observations
@@ -79,223 +79,23 @@ Y <- A * Y1 + (1 - A) * Y0
 library(intFRT)
 ada_g <- compute_ada_gamma(
   Y, A, S, X, 
-  # Tuning with 10 replications for illustration purposes
+  # Tuning with 20 replications for illustration purposes
   # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
-  n_rep_gamma = 10
+  n_rep_gamma = 20
 )
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> For gamma_sel = 0, MSE = 9.79509232174137
-#> 
-#> For gamma_sel = 0.1, MSE = 0.0689119336476413
-#> 
-#> For gamma_sel = 0.2, MSE = 0.066647195165469
-#> 
-#> For gamma_sel = 0.3, MSE = 0.0671018340007378
-#> 
-#> For gamma_sel = 0.4, MSE = 0.0712249000483368
-#> 
-#> For gamma_sel = 0.5, MSE = 0.0784334125029562
-#> 
-#> For gamma_sel = 0.6, MSE = 0.0888779084891255
-#> 
-#> For gamma_sel = 0.7, MSE = 0.0833561569745774
-#> 
-#> For gamma_sel = 0.8, MSE = 0.0899875598504626
-#> 
-#> For gamma_sel = 0.9, MSE = 0.100556091745312
-#> 
-#> For gamma_sel = 1, MSE = 0.113279996556884
+#> Gamma = 0.00 | MSE = 0.5663
+#> Gamma = 0.10 | MSE = 0.0245
+#> Gamma = 0.20 | MSE = 0.0270
+#> Gamma = 0.30 | MSE = 0.0265
+#> Gamma = 0.40 | MSE = 0.0285
+#> Gamma = 0.50 | MSE = 0.0281
+#> Gamma = 0.60 | MSE = 0.0289
+#> Gamma = 0.70 | MSE = 0.0292
+#> Gamma = 0.80 | MSE = 0.0312
+#> Gamma = 0.90 | MSE = 0.0336
+#> Gamma = 1.00 | MSE = 0.0298
 ada_g
-#> [1] 0.2
+#> [1] 0.1
 ```
 
 ### Fisher Randomization Test with Conformal Selective Borrowing
@@ -314,40 +114,18 @@ result_csb <- ec_borrow(
   # To perform only Conformal Selective Borrowing, set `n_fisher = NULL`
   n_fisher = 10
 )
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
-#> Warning in y0_ec - m0_ec: longer object length is not a multiple of shorter
-#> object length
 
 # View results
 print(result_csb$res, width = Inf)
 #> # A tibble: 2 × 9
-#>   method                                 est     se   ci_l  ci_u  p_value n_sel
-#>   <chr>                                <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
-#> 1 Conformal Selective Borrow AIPW      0.821  0.241  0.349  1.29 0.000659    42
-#> 2 Conformal Selective Borrow AIPW+FRT NA     NA     NA     NA    0.0909      NA
+#>   method                                est     se   ci_l  ci_u  p_value n_sel
+#>   <chr>                               <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
+#> 1 Conformal Selective Borrow AIPW      1.35  0.210  0.941  1.76 1.12e-10    50
+#> 2 Conformal Selective Borrow AIPW+FRT NA    NA     NA     NA    9.09e- 2    NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    31.9  0.0650
-#> 2    NA    0.632
+#> 1    48.2  0.0650
+#> 2    NA    0.576
 ```
 
 - `est`: ATE estimate.
@@ -361,9 +139,9 @@ print(result_csb$res, width = Inf)
 ``` r
 # View IDs of borrowed external controls
 result_csb$id_sel
-#>  [1]  51  52  53  54  55  56  57  58  60  62  63  64  65  66  67  68  69  71  72
-#> [20]  73  74  76  77  78  79  81  82  83  84  85  86  88  89  90  91  92  93  94
-#> [39]  95  97  98 100
+#>  [1]  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69
+#> [20]  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88
+#> [39]  89  90  91  92  93  94  95  96  97  98  99 100
 ```
 
 ### Visualize borrowed external controls

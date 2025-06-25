@@ -25,7 +25,7 @@ ec_borrow(
   sig_level = 0.05,
   small_n_adj = TRUE,
   parallel = FALSE,
-  n_cores = future::availableCores(logical = FALSE),
+  n_cores = NULL,
   output_frt = FALSE
 )
 }
@@ -209,8 +209,12 @@ print(result_nb$res)
 result_nb$id_sel
 
 # Compute adaptive gamma (with a small n_rep_gamma for illustration)
-ada_g <- compute_ada_gamma(Y, A, S, X)
-ada_g
+ada_g <- compute_ada_gamma(
+  Y, A, S, X,
+  # Tuning with 20 replications for illustration purposes
+  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
+  n_rep_gamma = 20
+)
 
 # Perform Fisher Randomization Test with Conformal Selective Borrowing
 result_csb <- ec_borrow(
