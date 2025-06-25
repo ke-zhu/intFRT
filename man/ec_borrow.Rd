@@ -15,11 +15,12 @@ ec_borrow(
   n_boot = NULL,
   gamma_sel = 0.6,
   cf = "cv+",
-  cf_score = "AR",
+  cf_score = "CQR",
   cf_model = "glm",
   split_train = 0.75,
   cv_fold = 10,
   outcome_model = "glm",
+  sampling_model = "glm",
   max_r = Inf,
   sig_level = 0.05,
   small_n_adj = TRUE,
@@ -75,12 +76,13 @@ Default is "cv+", with other options being "split", "full", and
 "jackknife+".}
 
 \item{cf_score}{Character string specifying the scoring function for
-conformal inference. Default is "AR" for absolute residuals. Another option
-is "CQR" for conformal quantile regression.}
+conformal inference. Default is "CQR" for conformal quantile regression.
+Another option is "AR" for absolute residuals.}
 
 \item{cf_model}{Character string specifying the model to use for outcome
 prediction in conformal inference. Default is "glm" for generalized linear
-model. Another option is "rf" for random forest.}
+model. Other options are "rf" for random forest and "ral" for relaxed
+adaptive lasso.}
 
 \item{split_train}{Numeric value (between 0 and 1) specifying the proportion
 of data to use for training when \code{cf = "split"}. Default is 0.75.}
@@ -90,7 +92,13 @@ when \code{cf = "cv+"}. Default is 10.}
 
 \item{outcome_model}{Character string specifying the model to use for outcome
 imputation in OM/AIPW/ACW methods. Default is "glm" for generalized linear
-model. Another option is "rf" for random forest.}
+model. Other options are "rf" for random forest and "ral" for relaxed
+adaptive lasso.}
+
+\item{sampling_model}{Character string specifying the model to use for
+sampling model. Default is "glm" for generalized linear model.
+Other options are "rf" for random forest and "ral" for relaxed adaptive
+lasso.}
 
 \item{max_r}{Numeric value limiting the ratio of residual variances between
 trial and external control groups. Default is \code{Inf} (no restriction).}

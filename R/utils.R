@@ -251,8 +251,8 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
   if (cw) {
     if (sampling_model == "ral") {
       X_sel_ind <- pred_model(
-        dat_S %>% mutate(Y = S),
-        dat_S %>% mutate(Y = S),
+        dat %>% mutate(Y = S),
+        dat %>% mutate(Y = S),
         family = "binomial", base_model = "ral", var_sel = TRUE
       )
       qhat <- compute_cw(dat$S, dat$X[,X_sel_ind])
@@ -263,8 +263,8 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
     # sampling propensity score model
     # pS <- glm(S ~ X, family = "binomial", dat) %>% predict(dat, "response")
     pS <- pred_model(
-      dat_S %>% mutate(Y = S),
-      dat_S %>% mutate(Y = S),
+      dat %>% mutate(Y = S),
+      dat %>% mutate(Y = S),
       family = "binomial", base_model = sampling_model
     )
     qhat <- pS / (1 - pS)
