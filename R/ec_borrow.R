@@ -251,8 +251,25 @@ ec_borrow <- function(
     output_frt = FALSE
 ) {
   if (parallel) {
-    furrr::plan(multisession, workers = n_cores)
+    rlang::check_installed("future", reason = "to set execution plan for `furrr`")
+    rlang::check_installed("furrr", reason = "to use `furrr::future_map()` for parallel execution")
+    future::plan(multisession, workers = n_cores)
   }
+
+  if ("ral" %in% c(outcome_model, sampling_model))
+    rlang::check_installed("glmnet", reason = "to use `glmnet::cv.glmnet()` for 'ral'")
+
+  if ("rf" %in% c(outcome_model, sampling_model))
+    rlang::check_installed("randomForest", reason = "to use `randomForest()` for 'rf'")
+
+  if (cf_model == "ral")
+    rlang::check_installed("rqPen", reason = "to use `rq.pen.cv()` for cf_model = 'ral'")
+
+  if (cf_model == "rf")
+    rlang::check_installed("grf", reason = "to use `quantile_forest()` for cf_model = 'rf'")
+
+  if (cf_score == "NN")
+    rlang::check_installed("RANN", reason = "to use `nn2()` for cf_score = 'NN'")
 
   dat_origin <- tibble(Y, A, S, X)
   rm(Y, A, S, X)
@@ -637,7 +654,7 @@ ec_borrow <- function(
             }, error = function(e) {
               NA
             })
-          }, mc.cores = n_cores) %>%
+          }) %>%
             map_dbl(~.)
         } else {
           out_boot <- map_dbl(1:n_boot, ~ {
@@ -740,7 +757,7 @@ ec_borrow <- function(
             }, error = function(e) {
               NULL
             })
-          }, mc.cores = n_cores) %>%
+          }) %>%
             map_dfr(~.) %>%
             mutate(
               cond = floor(map_dbl(id_sel, length) / 10) == floor(res$n_sel / 10)
@@ -793,7 +810,7 @@ ec_borrow <- function(
   )
 
   if (parallel) {
-    furrr::plan(sequential)
+    future::plan(sequential)
   }
 
   if (output_frt) {

@@ -25,7 +25,7 @@ ec_borrow(
   sig_level = 0.05,
   small_n_adj = TRUE,
   parallel = FALSE,
-  n_cores = parallel::detectCores(logical = FALSE),
+  n_cores = future::availableCores(logical = FALSE),
   output_frt = FALSE
 )
 }
@@ -117,7 +117,7 @@ Default is \code{FALSE}.}
 
 \item{n_cores}{Integer specifying the number of cores to use for parallel
 computing. Default is the number of available physical cores on the
-machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
+machine, as determined by \code{future::availableCores(logical = FALSE)}.}
 
 \item{output_frt}{Logical value indicating whether to output all test
 statistic values from the Fisher randomization test. Default is \code{FALSE}.}

@@ -75,7 +75,6 @@ pred_model <- function(
       as.vector()
   } else if (base_model == "rf") {
     # random forest
-    rlang::check_installed("randomForest", reason = "to use `randomForest()`")
     if (family == "gaussian") {
       mu_pred <- randomForest::randomForest(
         as.matrix(dat_train$X), dat_train$Y
@@ -358,7 +357,6 @@ fit_cf_model_quantile <- function(dat_train, dat_pred, a, cf_model) { # family =
     ci_mat
   } else if (cf_model == "rf") {
     ci_mat <- tryCatch({
-      rlang::check_installed("grf", reason = "to use `quantile_forest()`")
       fit <- grf::quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
       predict(fit, dat_pred$x)$predictions
     }, error = function(e) {
@@ -453,7 +451,6 @@ conformal_p <- function(x, y, s, family, cf, cf_score, cf_model,
         # compute score
         score_pred <- pmax(qhat_pred[,1] - y[id_pred], y[id_pred] - qhat_pred[,2])
       } else if (cf_score == "NN") {
-        rlang::check_installed("RANN", reason = "to use `nn2()`")
         # 1-nearest-neighbor
         d1 <- RANN::nn2(
           dat_train %>% filter(y == 1) %>% pull(x),

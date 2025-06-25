@@ -77,7 +77,10 @@ compute_ada_gamma <- function(Y, A, S, X,
                               opt = "mse",
                               sig_level = 0.05,
                               ...) {
-  if (!parallel) {n_cores <- 1}
+  if (parallel) {
+    future::plan(multisession, workers = n_cores)
+  }
+
   if (any(gamma_grid == 1)) {
     id_nb <- which(gamma_grid == 1)
   } else {
@@ -104,7 +107,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         est_se <- fit$out$se
         est_d <- fit$out$d[[1]]
         lst(est_one, est_se, est_d)
-      }, mc.cores = n_cores)
+      })
       # MSE
       res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
         d_g <- est_g$est_d
@@ -152,7 +155,7 @@ compute_ada_gamma <- function(Y, A, S, X,
 
         })
         lst(est_one, est_rep)
-      }, mc.cores = n_cores)
+      })
       # MSE
       res_grid <- map2(est_grid, gamma_grid, function(est_g, g) {
         var_hat <- map_dbl(est_g$est_rep, ~ .) %>% var
@@ -225,11 +228,16 @@ compute_ada_gamma <- function(Y, A, S, X,
       power_hat_g <- mean(T_H1 > critical_value) # estimated power
       # output
       power_hat_g
-    }, mc.cores = n_cores) %>% map_dbl(~.)
+    }) %>% map_dbl(~.)
     # print
     walk2(gamma_grid, power_hat, function(g, power_hat_g) {
       cat(paste0("For gamma_sel = ", g, ", power = ", power_hat_g, "\n\n"))
     })
+
+    if (parallel) {
+      future::plan(sequential)
+    }
+
     # output
     gamma_grid[which.max(power_hat)]
   }

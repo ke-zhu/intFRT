@@ -13,7 +13,7 @@ compute_ada_gamma(
   gamma_grid = seq(0, 1, by = 0.1),
   n_rep_gamma = 100,
   parallel = F,
-  n_cores = parallel::detectCores(logical = FALSE),
+  n_cores = future::availableCores(logical = FALSE),
   opt = "mse",
   sig_level = 0.05,
   ...
@@ -43,7 +43,7 @@ Default is \code{FALSE}.}
 
 \item{n_cores}{Integer specifying the number of cores to use for parallel
 computing. Default is the number of available physical cores on the
-machine, as determined by \code{parallel::detectCores(logical = FALSE)}.}
+machine, as determined by \code{future::availableCores(logical = FALSE)}.}
 
 \item{opt}{Character specifying the criterion to determine gamma. Options are
 "power" or "mse". Default is "mse".}
