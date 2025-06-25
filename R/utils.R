@@ -111,22 +111,29 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
   n_rct <- dat %>% filter(S == 1) %>% nrow
   dat_rct <- dat %>% filter(S == 1)
 
+  # treatment propensity score model (use true)
+  pA <- n_rt / n_rct
+
   # outcome model
   m10 <- fit_outcome_model(dat_rct, family, outcome_model)
   m1 <- m10$m1
   m0 <- m10$m0
 
-  pA <- n_rt / n_rct
+  # EIF
   d <- with(
     dat_rct,
     m1 + A / pA * (Y - m1) - m0 - (1 - A) / (1 - pA) * (Y - m0)
   )
+
+  # small sample adjustment for variance estimation
   if (small_n_adj) {
     dof <- max(n_rct - ncol(dat$X) * 2, 1)
     se <- sqrt(sum((d - mean(d))^2) / dof^2)
   } else {
     se <- sqrt(sum((d - mean(d))^2) / n_rct^2)
   }
+
+  # output
   tibble(
     est = mean(d),
     se = se,
@@ -140,25 +147,15 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   n_rct <- dat %>% filter(S == 1) %>% nrow
   n_all <- dat %>% nrow
 
+  # treatment propensity score model (use true)
+  pA <- n_rt / n_rct
+
   # outcome model
   m10 <- fit_outcome_model(dat, family, outcome_model)
   m1 <- m10$m1
   m0 <- m10$m0
 
-  # treatment group
-  # use true propensity score
-  pA <- n_rt / n_rct
-  w1 <- with(
-    dat,
-    S * A / pA
-  )
-  d1 <- with(
-    dat,
-    (n_all / n_rct) * (S * m1 +  w1 * (Y - m1))
-  )
-
-  # control group
-  # compute r
+  # conditional variance model (align with outcome model)
   if (family == "gaussian") {
     r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
       resid(type = "response") %>% var
@@ -169,7 +166,8 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
     # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
     r <- 1
   }
-  # compute qhat
+
+  # sampling propensity score model
   if (cw) {
     qhat <- compute_cw(dat$S, dat$X)
   } else {
@@ -181,6 +179,18 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
     qhat * (S * (1 - A) + (1 - S) * r) / (qhat * (1 - pA) + r)
   )
   w0 <- w0init / sum(w0init) * n_rct
+
+  # treatment group EIF
+  w1 <- with(
+    dat,
+    S * A / pA
+  )
+  d1 <- with(
+    dat,
+    (n_all / n_rct) * (S * m1 +  w1 * (Y - m1))
+  )
+
+  # control group EIF
   d0 <- with(
     dat,
     (n_all / n_rct) * (S * m0 +  w0 * (Y - m0))
@@ -189,6 +199,7 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   # compute est
   d <- d1 - d0
   est <- mean(d)
+
   # compute se
   if (small_n_adj) {
     dof <- max(n_all - ncol(dat$X) * 3, 1)
@@ -199,6 +210,7 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   }
   se_i <- d - dat$S / (n_rct / n_all) * mean(d)
   se <- sqrt(sum(se_i^2) / dof^2)
+
   # output
   tibble(est, se, ess_sel = max(0, ESS(w0) - n_rc), d = list(d))
 }
