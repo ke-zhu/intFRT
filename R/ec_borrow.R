@@ -44,14 +44,20 @@
 #'   Another option is "AR" for absolute residuals.
 #' @param cf_model Character string specifying the model to use for outcome
 #'   prediction in conformal inference. Default is "glm" for generalized linear
-#'   model. Another option is "rf" for random forest.
+#'   model. Other options are "rf" for random forest and "ral" for relaxed
+#'   adaptive lasso.
 #' @param split_train Numeric value (between 0 and 1) specifying the proportion
 #'   of data to use for training when `cf = "split"`. Default is 0.75.
 #' @param cv_fold Integer specifying the number of folds for cross-validation
 #'   when `cf = "cv+"`. Default is 10.
 #' @param outcome_model Character string specifying the model to use for outcome
 #'   imputation in OM/AIPW/ACW methods. Default is "glm" for generalized linear
-#'   model. Another option is "rf" for random forest.
+#'   model. Other options are "rf" for random forest and "ral" for relaxed
+#'   adaptive lasso.
+#' @param sampling_model Character string specifying the model to use for
+#'   sampling model. Default is "glm" for generalized linear model.
+#'   Other options are "rf" for random forest and "ral" for relaxed adaptive
+#'   lasso.
 #' @param max_r Numeric value limiting the ratio of residual variances between
 #'   trial and external control groups. Default is `Inf` (no restriction).
 #' @param sig_level Numeric significance level for hypothesis tests. Default is
@@ -234,6 +240,7 @@ ec_borrow <- function(
     cv_fold = 10,
     # AIPW
     outcome_model = "glm",
+    sampling_model = "glm",
     max_r = Inf,
     # testing
     sig_level = 0.05,
@@ -499,7 +506,8 @@ ec_borrow <- function(
 
   if (identical(method, "Borrow AIPW")) {
     est_fun <- function(dat) {
-      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj) %>%
+      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj,
+                      sampling_model) %>%
         # borrow all ECs
         mutate(id_sel = list(which(dat$S == 0)))
     }
@@ -508,7 +516,8 @@ ec_borrow <- function(
 
   if (identical(method, "Borrow ACW")) {
     est_fun <- function(dat) {
-      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj, cw = TRUE) %>%
+      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj,
+                      sampling_model, cw = TRUE) %>%
         # borrow all ECs
         mutate(id_sel = list(which(dat$S == 0)))
     }
@@ -560,7 +569,8 @@ ec_borrow <- function(
         bias <- rep(0, nrow(dat))
         bias[dat$S == 0] <- bias_ec
         dat_sel <- dat %>% filter(bias == 0)
-        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj) %>%
+        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj,
+                        sampling_model) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
       }
     }
@@ -591,7 +601,8 @@ ec_borrow <- function(
         bias <- rep(0, nrow(dat))
         bias[dat$S == 0] <- bias_ec
         dat_sel <- dat %>% filter(bias == 0)
-        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj, cw = TRUE) %>%
+        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj,
+                        sampling_model, cw = TRUE) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
       }
     }

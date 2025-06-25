@@ -1,62 +1,120 @@
-fit_outcome_model <- function(dat, family, outcome_model) {
-  if (outcome_model == "glm") {
-    m1 <- glm(Y ~ X, family = family, dat %>% filter(A == 1)) %>%
-      predict(dat, "response")
-    m0 <- glm(Y ~ X, family = family, dat %>% filter(A == 0)) %>%
-      predict(dat, "response")
-  } else if (outcome_model == "rf") {
+
+# ATE estimator -----------------------------------------------------------
+
+# fit_outcome_model <- function(dat, family, outcome_model) {
+#   if (outcome_model == "glm") {
+#     m1 <- glm(Y ~ X, family = family, dat %>% filter(A == 1)) %>%
+#       predict(dat, "response")
+#     m0 <- glm(Y ~ X, family = family, dat %>% filter(A == 0)) %>%
+#       predict(dat, "response")
+#   } else if (outcome_model == "rf") {
+#     rlang::check_installed("randomForest", reason = "to use `randomForest()`")
+#     if (family == "gaussian") {
+#       m1 <- randomForest::randomForest(dat$X[dat$A == 1, , drop = FALSE], dat$Y[dat$A == 1]) %>%
+#         predict(dat$X)
+#       m0 <- randomForest::randomForest(dat$X[dat$A == 0, , drop = FALSE], dat$Y[dat$A == 0]) %>%
+#         predict(dat$X)
+#     } else if (family == "binomial") {
+#       m1 <- randomForest::randomForest(
+#         dat$X[dat$A == 1, , drop = FALSE], as.factor(dat$Y[dat$A == 1])
+#       ) %>%
+#         predict(dat$X, type = "prob") %>%
+#         {.[, 2]}
+#       m0 <- randomForest::randomForest(
+#         dat$X[dat$A == 0, , drop = FALSE], as.factor(dat$Y[dat$A == 0])
+#       ) %>%
+#         predict(dat$X, type = "prob") %>%
+#         {.[, 2]}
+#     }
+#   } else if (outcome_model == "ral") {
+#     # Fit relaxed adaptive lasso for treated group
+#     fit_ridge1 <- glmnet::cv.glmnet(
+#       X[A == 1, ], Y[A == 1],
+#       family = family, alpha = 0
+#     )
+#     fit_lasso1 <- glmnet::cv.glmnet(
+#       X[A == 1, ], Y[A == 1],
+#       family = family,
+#       relax = TRUE, gamma = 0, # refitting
+#       penalty.factor = abs(coef(fit_ridge1)[-1]) # adaptive weights
+#     )
+#     m1 <- predict(
+#       fit_lasso1, newx = X,
+#       s = "lambda.min", type = "response"
+#     ) %>% as.vector()
+#
+#     # Fit relaxed adaptive lasso for control group
+#     fit_ridge0 <- glmnet::cv.glmnet(
+#       X[A == 0, ], Y[A == 0],
+#       family = family, alpha = 0
+#     )
+#     fit_lasso0 <- glmnet::cv.glmnet(
+#       X[A == 0, ], Y[A == 0],
+#       family = family,
+#       relax = TRUE, gamma = 0, # refitting
+#       penalty.factor = abs(coef(fit_ridge0)[-1]) # adaptive weights
+#     )
+#     m0 <- predict(
+#       fit_lasso0, newx = X,
+#       s = "lambda.min", type = "response"
+#     ) %>% as.vector()
+#   }
+#   lst(m1, m0)
+# }
+
+pred_model <- function(
+    dat_train, dat_pred, family, base_model,
+    var_sel = FALSE # if TRUE, output selected X rather than prediction
+  ) {
+  if (base_model != "ral") var_sel = FALSE # only work when base_model == "ral"
+
+  if (base_model == "glm") {
+    # GLM
+    mu_pred <- glm(Y ~ X, family = family, dat_train) %>%
+      predict(dat_pred, "response") %>%
+      as.vector()
+  } else if (base_model == "rf") {
+    # random forest
     rlang::check_installed("randomForest", reason = "to use `randomForest()`")
     if (family == "gaussian") {
-      m1 <- randomForest::randomForest(dat$X[dat$A == 1, , drop = FALSE], dat$Y[dat$A == 1]) %>%
-        predict(dat$X)
-      m0 <- randomForest::randomForest(dat$X[dat$A == 0, , drop = FALSE], dat$Y[dat$A == 0]) %>%
-        predict(dat$X)
+      mu_pred <- randomForest::randomForest(
+        as.matrix(dat_train$X), dat_train$Y
+      ) %>%
+        predict(dat_pred$X) %>%
+        as.vector()
     } else if (family == "binomial") {
-      m1 <- randomForest::randomForest(
-        dat$X[dat$A == 1, , drop = FALSE], as.factor(dat$Y[dat$A == 1])
+      mu_pred <- randomForest::randomForest(
+        as.matrix(dat_train$X), as.factor(dat_train$Y)
       ) %>%
-        predict(dat$X, type = "prob") %>%
-        {.[, 2]}
-      m0 <- randomForest::randomForest(
-        dat$X[dat$A == 0, , drop = FALSE], as.factor(dat$Y[dat$A == 0])
-      ) %>%
-        predict(dat$X, type = "prob") %>%
-        {.[, 2]}
+        predict(as.matrix(dat_pred$X), type = "prob") %>%
+        {.[, 2]} %>%
+        as.vector()
     }
-  } else if (outcome_model == "ral") {
-    # Fit relaxed adaptive lasso for treated group
-    fit_ridge1 <- glmnet::cv.glmnet(
-      X[A == 1, ], Y[A == 1],
-      family = family, alpha = 0
+  } else if (base_model == "ral") {
+    # relaxed adaptive lasso
+    fit_ridge <- glmnet::cv.glmnet(
+      as.matrix(dat_train$X), dat_train$Y,
+      family = family,
+      alpha = 0 # ridge
     )
-    fit_lasso1 <- glmnet::cv.glmnet(
-      X[A == 1, ], Y[A == 1],
+    fit_ralasso <- glmnet::cv.glmnet(
+      as.matrix(dat_train$X), dat_train$Y,
       family = family,
       relax = TRUE, gamma = 0, # refitting
-      penalty.factor = abs(glmnet::coef(fit_ridge1)[-1]) # adaptive weights
+      penalty.factor = abs(coef(fit_ridge)[-1]) # adaptive weights
     )
-    m1 <- glmnet::predict(
-      fit_lasso1, newx = X,
+    mu_pred <- predict(
+      fit_ralasso, newx = as.matrix(dat_pred$X),
       s = "lambda.min", type = "response"
-    ) %>% as.vector()
-
-    # Fit relaxed adaptive lasso for control group
-    fit_ridge0 <- glmnet::cv.glmnet(
-      X[A == 0, ], Y[A == 0],
-      family = family, alpha = 0
-    )
-    fit_lasso0 <- glmnet::cv.glmnet(
-      X[A == 0, ], Y[A == 0],
-      family = family,
-      relax = TRUE, gamma = 0, # refitting
-      penalty.factor = abs(glmnet::coef(fit_ridge0)[-1]) # adaptive weights
-    )
-    m0 <- glmnet::predict(
-      fit_lasso0, newx = X,
-      s = "lambda.min", type = "response"
-    ) %>% as.vector()
+    ) %>%
+      as.vector()
+    X_sel_ind <- which(coef(fit_ralasso, s = "lambda.min")[-1] != 0)
   }
-  lst(m1, m0)
+  if (var_sel) {
+    return(X_sel_ind)
+  } else {
+    return(mu_pred)
+  }
 }
 
 compute_cw <- function(S, X) {
@@ -115,9 +173,11 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
   pA <- n_rt / n_rct
 
   # outcome model
-  m10 <- fit_outcome_model(dat_rct, family, outcome_model)
-  m1 <- m10$m1
-  m0 <- m10$m0
+  # m10 <- fit_outcome_model(dat_rct, family, outcome_model)
+  # m1 <- m10$m1
+  # m0 <- m10$m0
+  m1 <- pred_model(dat_rct %>% filter(A == 1), dat_rct, family, outcome_model)
+  m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
 
   # EIF
   d <- with(
@@ -141,7 +201,8 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
   )
 }
 
-rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw = FALSE) {
+rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
+                            sampling_model, cw = FALSE) {
   n_rt <- dat %>% filter(A == 1, S == 1) %>% nrow
   n_rc <- dat %>% filter(A == 0, S == 1) %>% nrow
   n_rct <- dat %>% filter(S == 1) %>% nrow
@@ -151,27 +212,61 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   pA <- n_rt / n_rct
 
   # outcome model
-  m10 <- fit_outcome_model(dat, family, outcome_model)
-  m1 <- m10$m1
-  m0 <- m10$m0
+  # m10 <- fit_outcome_model(dat, family, outcome_model)
+  # m1 <- m10$m1
+  # m0 <- m10$m0
+  m1 <- pred_model(dat %>% filter(A == 1), dat, family, outcome_model)
+  m0 <- pred_model(dat %>% filter(A == 0), dat, family, outcome_model)
 
   # conditional variance model (align with outcome model)
   if (family == "gaussian") {
-    r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
-      resid(type = "response") %>% var
-    r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
-      resid(type = "response") %>% var
+    # r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
+    #   resid(type = "response") %>% var
+    # r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
+    #   resid(type = "response") %>% var
+
+    m0_rc <- pred_model(
+      dat %>% filter(A == 0, S == 1),
+      dat %>% filter(A == 0, S == 1),
+      family, outcome_model
+    )
+    y0_rc <- dat %>% filter(A == 0, S == 1) %>% pull(Y)
+    r1 <- var(y0_rc - m0_rc)
+
+    m0_ec <- pred_model(
+      dat %>% filter(A == 0, S == 0),
+      dat %>% filter(A == 0, S == 0),
+      family, outcome_model
+    )
+    y0_ec <- dat %>% filter(A == 0, S == 1) %>% pull(Y)
+    r0 <- var(y0_ec - m0_ec)
+
     r <- min(r1 / r0, max_r)
   } else if (family == "binomial") {
     # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
     r <- 1
   }
 
-  # sampling propensity score model
+  # weighting model
   if (cw) {
-    qhat <- compute_cw(dat$S, dat$X)
+    if (sampling_model == "ral") {
+      X_sel_ind <- pred_model(
+        dat_S %>% mutate(Y = S),
+        dat_S %>% mutate(Y = S),
+        family = "binomial", base_model = "ral", var_sel = TRUE
+      )
+      qhat <- compute_cw(dat$S, dat$X[,X_sel_ind])
+    } else {
+      qhat <- compute_cw(dat$S, dat$X)
+    }
   } else {
-    pS <- glm(S ~ X, family = "binomial", dat) %>% predict(dat, "response")
+    # sampling propensity score model
+    # pS <- glm(S ~ X, family = "binomial", dat) %>% predict(dat, "response")
+    pS <- pred_model(
+      dat_S %>% mutate(Y = S),
+      dat_S %>% mutate(Y = S),
+      family = "binomial", base_model = sampling_model
+    )
     qhat <- pS / (1 - pS)
   }
   w0init <- with(
@@ -214,6 +309,10 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj, cw =
   # output
   tibble(est, se, ess_sel = max(0, ESS(w0) - n_rc), d = list(d))
 }
+
+
+# Conformal p-value -------------------------------------------------------
+
 
 fit_cf_model_mean <- function(dat_train, dat_pred, family, cf_model) {
   if (cf_model == "glm") {
@@ -261,7 +360,7 @@ fit_cf_model_quantile <- function(dat_train, dat_pred, a, cf_model) { # family =
     ci_mat <- tryCatch({
       rlang::check_installed("grf", reason = "to use `quantile_forest()`")
       fit <- grf::quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
-      grf::predict(fit, dat_pred$x)$predictions
+      predict(fit, dat_pred$x)$predictions
     }, error = function(e) {
       warning(str_glue("grf::quantile_forest() failed. Using empirical quantiles instead."))
       y_q <- quantile(dat_train$y, probs = c(a/2, 1 - a/2), na.rm = TRUE)
