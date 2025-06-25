@@ -26,6 +26,7 @@ Imports:
     purrr,
     quantreg,
     rlang,
+    rqPen,
     tibble,
     WeightIt
 Encoding: UTF-8

@@ -37,7 +37,7 @@ fit_outcome_model <- function(dat, family, outcome_model) {
     )
     m1 <- glmnet::predict(
       fit_lasso1, newx = X,
-      s = "lambda.1se", type = "response"
+      s = "lambda.min", type = "response"
     ) %>% as.vector()
 
     # Fit relaxed adaptive lasso for control group
@@ -53,7 +53,7 @@ fit_outcome_model <- function(dat, family, outcome_model) {
     )
     m0 <- glmnet::predict(
       fit_lasso0, newx = X,
-      s = "lambda.1se", type = "response"
+      s = "lambda.min", type = "response"
     ) %>% as.vector()
   }
   lst(m1, m0)
@@ -254,6 +254,57 @@ fit_cf_model_quantile <- function(dat_train, dat_pred, a, cf_model) { # family =
       warning(str_glue("grf::quantile_forest() failed. Using empirical quantiles instead."))
       y_q <- quantile(dat_train$y, probs = c(a/2, 1 - a/2), na.rm = TRUE)
       matrix(rep(y_q, each = nrow(dat_pred$x)), ncol = 2)
+    })
+    ci_mat
+  } else if (cf_model == "ral") {
+    ci_mat <- tryCatch({
+      x_train <- as.matrix(dat_train$x)
+      y_train <- dat_train$y
+      x_pred  <- as.matrix(dat_pred$x)
+      taus <- c(a / 2, 1 - a / 2)
+
+      # Step 1: Cross-validated adaptive lasso
+      cv_fit <- rqPen::rq.pen.cv(
+        x = x_train,
+        y = y_train,
+        tau = taus,
+        penalty = "aLASSO",
+        a = 1
+      )
+
+      # Step 2: Extract selected variables (non-zero coefficients)
+      sel_low <- which(abs(coef(cv_fit)[-1, 1]) > 1e-6)
+      sel_up  <- which(abs(coef(cv_fit)[-1, 2]) > 1e-6)
+
+      if (length(sel_low) == 0 || length(sel_up) == 0) {
+        stop("No variables selected by adaptive lasso rq.")
+      }
+
+      # Step 3: Refit unpenalized quantile regression
+      relaxed_low <- quantreg::rq(
+        y_train ~ .,
+        data = data.frame(y_train, x_train[, sel_low, drop = FALSE]),
+        tau = taus[1]
+      )
+      relaxed_up <- quantreg::rq(
+        y_train ~ .,
+        data = data.frame(y_train, x_train[, sel_up, drop = FALSE]),
+        tau = taus[2]
+      )
+
+      X_low_pred <- x_pred[, sel_low, drop = FALSE]
+      X_up_pred  <- x_pred[, sel_up,  drop = FALSE]
+      colnames(X_low_pred) <- names(coef(relaxed_low))[-1]
+      colnames(X_up_pred)  <- names(coef(relaxed_up))[-1]
+
+      cbind(
+        predict(relaxed_low, newdata = as.data.frame(X_low_pred)),
+        predict(relaxed_up,  newdata = as.data.frame(X_up_pred))
+      )
+    }, error = function(e) {
+      warning(str_glue("Relaxed adaptive lasso for rq failed. Using empirical quantiles instead."))
+      y_q <- quantile(dat_train$y, probs = c(a / 2, 1 - a / 2), na.rm = TRUE)
+      matrix(rep(y_q, each = nrow(dat_pred)), ncol = 2)
     })
     ci_mat
   }
