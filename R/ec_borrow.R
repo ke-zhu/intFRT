@@ -40,8 +40,8 @@
 #'   Default is "cv+", with other options being "split", "full", and
 #'   "jackknife+".
 #' @param cf_score Character string specifying the scoring function for
-#'   conformal inference. Default is "AR" for absolute residuals. Another option
-#'   is "CQR" for conformal quantile regression.
+#'   conformal inference. Default is "CQR" for conformal quantile regression.
+#'   Another option is "AR" for absolute residuals.
 #' @param cf_model Character string specifying the model to use for outcome
 #'   prediction in conformal inference. Default is "glm" for generalized linear
 #'   model. Another option is "rf" for random forest.
@@ -228,7 +228,7 @@ ec_borrow <- function(
     # CSB
     gamma_sel = 0.6,
     cf = "cv+",
-    cf_score = "AR",
+    cf_score = "CQR",
     cf_model = "glm",
     split_train = 0.75,
     cv_fold = 10,
