@@ -21,6 +21,8 @@ URL: https://github.com/ke-zhu/intFRT
 BugReports: https://github.com/ke-zhu/intFRT/issues
 Imports: 
     dplyr,
+    furrr,
+    future,
     glmnet,
     parallel,
     purrr,

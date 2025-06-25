@@ -71,7 +71,7 @@
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
 #'   computing. Default is the number of available physical cores on the
-#'   machine, as determined by `parallel::detectCores(logical = FALSE)`.
+#'   machine, as determined by `future::availableCores(logical = FALSE)`.
 #' @param output_frt Logical value indicating whether to output all test
 #'   statistic values from the Fisher randomization test. Default is `FALSE`.
 #'
@@ -247,9 +247,12 @@ ec_borrow <- function(
     small_n_adj = TRUE,
     # computing & output
     parallel = FALSE,
-    n_cores = parallel::detectCores(logical = FALSE),
+    n_cores = future::availableCores(logical = FALSE),
     output_frt = FALSE
 ) {
+  if (parallel) {
+    furrr::plan(multisession, workers = n_cores)
+  }
 
   dat_origin <- tibble(Y, A, S, X)
   rm(Y, A, S, X)
@@ -624,7 +627,7 @@ ec_borrow <- function(
         if (parallel) {
           cat(paste0("parallel computing enabled with ", n_cores,
                      " cores for bootstrap SE of ", method, "\n\n"))
-          out_boot <- parallel::mclapply(1:n_boot, function(i) {
+          out_boot <- furrr::future_map(1:n_boot, function(i) {
             dat_boot <- dat_origin %>%
               group_by(A, S) %>%
               slice_sample(prop = 1, replace = TRUE) %>%
@@ -729,7 +732,7 @@ ec_borrow <- function(
           cat(paste0("parallel computing enabled with ", n_cores,
                      " cores for ", method, "+FRT\n\n"))
           # randomization
-          out_frt <- parallel::mclapply(1:n_fisher, function(i) {
+          out_frt <- furrr::future_map(1:n_fisher, function(i) {
             dat_rand <- dat_origin %>%
               mutate(A = {A[S == 1] <- sample(A[S == 1]); A})
             tryCatch({
@@ -788,6 +791,11 @@ ec_borrow <- function(
     n_ec = dat_origin %>% filter(A == 0, S == 0) %>% nrow,
     id_ec = list(which(dat_origin$S == 0))
   )
+
+  if (parallel) {
+    furrr::plan(sequential)
+  }
+
   if (output_frt) {
     lst(res, id_sel = out$id_sel[[1]], dat_info, gamma_sel, out, out_frt)
   } else {

@@ -18,7 +18,7 @@
 #'   Default is `FALSE`.
 #' @param n_cores Integer specifying the number of cores to use for parallel
 #'   computing. Default is the number of available physical cores on the
-#'   machine, as determined by `parallel::detectCores(logical = FALSE)`.
+#'   machine, as determined by `future::availableCores(logical = FALSE)`.
 #' @param opt Character specifying the criterion to determine gamma. Options are
 #' "power" or "mse". Default is "mse".
 #' @param sig_level Numeric value indicating the significance level for
@@ -73,7 +73,7 @@ compute_ada_gamma <- function(Y, A, S, X,
                               gamma_grid = seq(0, 1, by = 0.1),
                               n_rep_gamma = 100,
                               parallel = F,
-                              n_cores = parallel::detectCores(logical = FALSE),
+                              n_cores = future::availableCores(logical = FALSE),
                               opt = "mse",
                               sig_level = 0.05,
                               ...) {
@@ -94,7 +94,7 @@ compute_ada_gamma <- function(Y, A, S, X,
     if (is.null(n_rep_gamma)) {
       # sandwich variance estimator
       # est
-      est_grid <- parallel::mclapply(gamma_grid, function(g) {
+      est_grid <- furrr::future_map(gamma_grid, function(g) {
         fit <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
           "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
@@ -136,7 +136,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         bind_rows(dat_rct_boot, dat_ec)
       })
       # est
-      est_grid <- parallel::mclapply(gamma_grid, function(g) {
+      est_grid <- furrr::future_map(gamma_grid, function(g) {
         est_one <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
           "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
@@ -175,7 +175,7 @@ compute_ada_gamma <- function(Y, A, S, X,
     # output
     gamma_grid[which.min(map_dbl(res_grid, "mse_hat"))]
   } else if (opt == "power") {
-    power_hat <- parallel::mclapply(gamma_grid, function(g) {
+    power_hat <- furrr::future_map(gamma_grid, function(g) {
       # distribution of T under H0
       res_H0 <- ec_borrow(
         dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
