@@ -23,6 +23,38 @@ fit_outcome_model <- function(dat, family, outcome_model) {
         predict(dat$X, type = "prob") %>%
         {.[, 2]}
     }
+  } else if (outcome_model == "ral") {
+    # Fit relaxed adaptive lasso for treated group
+    fit_ridge1 <- glmnet::cv.glmnet(
+      X[A == 1, ], Y[A == 1],
+      family = family, alpha = 0
+    )
+    fit_lasso1 <- glmnet::cv.glmnet(
+      X[A == 1, ], Y[A == 1],
+      family = family,
+      relax = TRUE, gamma = 0, # refitting
+      penalty.factor = abs(glmnet::coef(fit_ridge1)[-1]) # adaptive weights
+    )
+    m1 <- glmnet::predict(
+      fit_lasso1, newx = X,
+      s = "lambda.1se", type = "response"
+    ) %>% as.vector()
+
+    # Fit relaxed adaptive lasso for control group
+    fit_ridge0 <- glmnet::cv.glmnet(
+      X[A == 0, ], Y[A == 0],
+      family = family, alpha = 0
+    )
+    fit_lasso0 <- glmnet::cv.glmnet(
+      X[A == 0, ], Y[A == 0],
+      family = family,
+      relax = TRUE, gamma = 0, # refitting
+      penalty.factor = abs(glmnet::coef(fit_ridge0)[-1]) # adaptive weights
+    )
+    m0 <- glmnet::predict(
+      fit_lasso0, newx = X,
+      s = "lambda.1se", type = "response"
+    ) %>% as.vector()
   }
   lst(m1, m0)
 }
