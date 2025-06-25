@@ -77,11 +77,11 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ```{r ada_g}
 library(intFRT)
+library(furrr)
 ada_g <- compute_ada_gamma(
   Y, A, S, X, 
-  # Tuning with 20 replications for illustration purposes
-  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
-  n_rep_gamma = 20
+  n_rep_gamma = 100,
+  parallel = TRUE
 )
 ada_g
 ```

@@ -77,23 +77,24 @@ Y <- A * Y1 + (1 - A) * Y0
 
 ``` r
 library(intFRT)
+library(furrr)
+#> Loading required package: future
 ada_g <- compute_ada_gamma(
   Y, A, S, X, 
-  # Tuning with 20 replications for illustration purposes
-  # Recommend setting `n_rep_gamma = 100` or higher with parallel computing
-  n_rep_gamma = 20
+  n_rep_gamma = 100,
+  parallel = TRUE
 )
-#> Gamma = 0.00 | MSE = 0.5663
-#> Gamma = 0.10 | MSE = 0.0245
-#> Gamma = 0.20 | MSE = 0.0270
-#> Gamma = 0.30 | MSE = 0.0265
-#> Gamma = 0.40 | MSE = 0.0285
-#> Gamma = 0.50 | MSE = 0.0281
-#> Gamma = 0.60 | MSE = 0.0289
-#> Gamma = 0.70 | MSE = 0.0292
-#> Gamma = 0.80 | MSE = 0.0312
-#> Gamma = 0.90 | MSE = 0.0336
-#> Gamma = 1.00 | MSE = 0.0298
+#> Gamma = 0.00 | MSE = 0.5991
+#> Gamma = 0.10 | MSE = 0.0392
+#> Gamma = 0.20 | MSE = 0.0419
+#> Gamma = 0.30 | MSE = 0.0421
+#> Gamma = 0.40 | MSE = 0.0436
+#> Gamma = 0.50 | MSE = 0.0475
+#> Gamma = 0.60 | MSE = 0.0534
+#> Gamma = 0.70 | MSE = 0.0525
+#> Gamma = 0.80 | MSE = 0.0562
+#> Gamma = 0.90 | MSE = 0.0640
+#> Gamma = 1.00 | MSE = 0.0720
 ada_g
 #> [1] 0.1
 ```
@@ -120,12 +121,12 @@ print(result_csb$res, width = Inf)
 #> # A tibble: 2 × 9
 #>   method                                est     se   ci_l  ci_u  p_value n_sel
 #>   <chr>                               <dbl>  <dbl>  <dbl> <dbl>    <dbl> <dbl>
-#> 1 Conformal Selective Borrow AIPW      1.35  0.210  0.941  1.76 1.12e-10    50
+#> 1 Conformal Selective Borrow AIPW      1.37  0.206  0.961  1.77 3.60e-11    48
 #> 2 Conformal Selective Borrow AIPW+FRT NA    NA     NA     NA    9.09e- 2    NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    48.2  0.0650
-#> 2    NA    0.576
+#> 1    44.5   0.907
+#> 2    NA     0.666
 ```
 
 - `est`: ATE estimate.
@@ -139,9 +140,9 @@ print(result_csb$res, width = Inf)
 ``` r
 # View IDs of borrowed external controls
 result_csb$id_sel
-#>  [1]  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69
-#> [20]  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88
-#> [39]  89  90  91  92  93  94  95  96  97  98  99 100
+#>  [1]  51  52  53  54  55  56  57  58  60  61  62  63  64  65  66  67  68  69  70
+#> [20]  71  72  73  74  75  76  77  78  79  80  82  83  84  85  86  87  88  89  90
+#> [39]  91  92  93  94  95  96  97  98  99 100
 ```
 
 ### Visualize borrowed external controls
