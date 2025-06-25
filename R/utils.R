@@ -200,16 +200,30 @@ fit_cf_model_mean_sd <- function(dat_train, dat_pred) { # family = "gaussian"
 
 fit_cf_model_quantile <- function(dat_train, dat_pred, a, cf_model) { # family = "gaussian"
   if (cf_model == "glm") {
-    fit_low <- quantreg::rq(y ~ x, tau = a/2, data = dat_train)
-    fit_up <- quantreg::rq(y ~ x, tau = 1 - a/2, data = dat_train)
-    cbind(
-      predict(fit_low, newdata = dat_pred),
-      predict(fit_up, newdata = dat_pred)
-    )
+    ci_mat <- tryCatch({
+      fit_low <- quantreg::rq(y ~ x, tau = a/2, data = dat_train)
+      fit_up  <- quantreg::rq(y ~ x, tau = 1 - a/2, data = dat_train)
+      cbind(
+        predict(fit_low, newdata = dat_pred),
+        predict(fit_up,  newdata = dat_pred)
+      )
+    }, error = function(e) {
+      warning(str_glue("quantreg::rq() failed. Using empirical quantiles instead."))
+      y_q <- quantile(dat_train$y, probs = c(a/2, 1 - a/2), na.rm = TRUE)
+      matrix(rep(y_q, each = nrow(dat_pred)), ncol = 2)
+    })
+    ci_mat
   } else if (cf_model == "rf") {
-    rlang::check_installed("grf", reason = "to use `quantile_forest()`")
-    fit <- grf::quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
-    predict(fit, dat_pred$x)$predictions
+    ci_mat <- tryCatch({
+      rlang::check_installed("grf", reason = "to use `quantile_forest()`")
+      fit <- grf::quantile_forest(dat_train$x, dat_train$y, quantiles = c(a/2, 1 - a/2))
+      grf::predict(fit, dat_pred$x)$predictions
+    }, error = function(e) {
+      warning(str_glue("grf::quantile_forest() failed. Using empirical quantiles instead."))
+      y_q <- quantile(dat_train$y, probs = c(a/2, 1 - a/2), na.rm = TRUE)
+      matrix(rep(y_q, each = nrow(dat_pred$x)), ncol = 2)
+    })
+    ci_mat
   }
 }
 
