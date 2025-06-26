@@ -257,10 +257,10 @@ ec_borrow <- function(
   if (parallel) {
     rlang::check_installed("future", reason = "to set execution plan for `furrr`")
     rlang::check_installed("furrr", reason = "to use `furrr::future_map()` for parallel execution")
-    future::plan(multisession, workers = n_cores)
     if (is.null(n_cores)) {
       n_cores <- future::availableCores(logical = FALSE)
     }
+    future::plan(multisession, workers = n_cores)
   }
 
   if ("ral" %in% c(outcome_model, sampling_model))

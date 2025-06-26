@@ -125,8 +125,8 @@ print(result_csb$res, width = Inf)
 #> 2 Conformal Selective Borrow AIPW+FRT NA    NA     NA     NA    9.09e- 2    NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    44.5   0.907
-#> 2    NA     0.666
+#> 1    44.5   0.893
+#> 2    NA     0.544
 ```
 
 - `est`: ATE estimate.
