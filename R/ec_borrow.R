@@ -582,7 +582,7 @@ ec_borrow <- function(
         cf, cf_score, cf_model, split_train, cv_fold, sig_level
       )
       # biased or unbiased
-      bias_ec <- ifelse(p_cf >= gamma_sel, 0, 1)
+      bias_ec <- ifelse(p_cf > gamma_sel, 0, 1)
       # estimation
       if (sum(bias_ec == 0) < 5) {
         # if n_sel < 5, do not borrow anyone
@@ -614,7 +614,7 @@ ec_borrow <- function(
         cf, cf_score, cf_model, split_train, cv_fold, sig_level
       )
       # biased or unbiased
-      bias_ec <- ifelse(p_cf >= gamma_sel, 0, 1)
+      bias_ec <- ifelse(p_cf > gamma_sel, 0, 1)
       # estimation
       if (sum(bias_ec == 0) < 5) {
         # if n_sel < 5, do not borrow anyone
