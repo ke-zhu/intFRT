@@ -511,7 +511,32 @@ ec_borrow <- function(
         r <- 1
       }
       # compute qhat
-      qhat <- compute_cw(dat$S, dat$X)
+      if (is.null(X_cw_ind)) { # no user-specified X_cw
+        if (sampling_model == "ral") { # data-adaptive X_cw by outcome-adaptive lasso
+          if (is.null(X_cw_ind)) {
+            X_cw_ind_rc <- pred_model(
+              dat %>% filter(A == 0, S == 1),
+              dat %>% filter(A == 0, S == 1),
+              family, base_model = "ral", var_sel = TRUE
+            )
+            X_cw_ind_ec <- pred_model(
+              dat %>% filter(A == 0, S == 0),
+              dat %>% filter(A == 0, S == 0),
+              family, base_model = "ral", var_sel = TRUE
+            )
+            X_cw_ind <- union(X_cw_ind_rc, X_cw_ind_ec)
+            X_cw <- dat$X[, X_cw_ind, drop = FALSE]
+          }
+        } else { # use all X
+          X_cw <- dat$X
+        }
+      } else { # user-specified X_cw
+        X_cw <- dat$X[, X_cw_ind, drop = FALSE]
+      }
+      # calibration weighting
+      qhat <- compute_cw(dat$S, X_cw)
+
+      # compute weight
       w0init <- with(
         dat,
         qhat * (S * (1 - A) + (1 - S) * r) / (qhat * (1 - pA) + r)
