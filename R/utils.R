@@ -150,7 +150,7 @@ compute_cw <- function(S, X) {
     w <- W.out$weights / n_ec
 
     # reproduce calibration weights for all sample, since w[S == 1] is constant
-    Xscale <- WeightIt:::.make_closer_to_1(X_try)
+    Xscale <- WeightIt:::.make_closer_to_1(X_try) %>% as.matrix()
     Xtarget <- sweep(Xscale, 2, colMeans(Xscale[S == 1, , drop = FALSE]))
     ww_init <- exp(-Xtarget %*% W.out$obj$`0`$par)
     ww <- ww_init / sum(ww_init[S == 0])

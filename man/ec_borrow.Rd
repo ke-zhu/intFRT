@@ -165,7 +165,7 @@ inference results based on asymptotic normality for comparison (see the
 \examples{
 # This example illustrates the use of the Fisher Randomization Test (FRT)
 # and different borrowing methods for hybrid controlled trials.
-
+\dontrun{
 library(intFRT)
 
 # Simulate data for a hybrid controlled trial
@@ -287,5 +287,6 @@ dat_plot \%>\%
               fill = "grey80", alpha = 0.5) +
   geom_point(aes(`Sampling Score`, Y, color = Type)) +
   scale_color_manual(values = c("#5A5A5A", "#00ADFA", "#F8766D"))
+}
 
 }

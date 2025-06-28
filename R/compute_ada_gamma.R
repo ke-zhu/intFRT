@@ -31,7 +31,7 @@
 #' @examples
 #' # This example illustrates the use of the Fisher Randomization Test (FRT)
 #' # and different borrowing methods for hybrid controlled trials.
-#'
+#' \dontrun{
 #' library(intFRT)
 #'
 #' # Simulate data for a hybrid controlled trial
@@ -68,6 +68,7 @@
 #'   n_rep_gamma = 20
 #' )
 #' ada_g
+#' }
 #'
 #' @import tibble
 #' @import dplyr
