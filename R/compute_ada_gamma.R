@@ -192,7 +192,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         lst(mse_hat, bias2_hat, var_hat)
       } else {
         # print
-        cat("Gamma = %.2f | Error")
+        cat("Gamma = %.2f | Error\n")
         lst(mse_hat = Inf, bias2_hat = Inf, var_hat = Inf)
       }
     })
