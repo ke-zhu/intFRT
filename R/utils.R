@@ -120,35 +120,58 @@ compute_cw <- function(S, X) {
   n_rct <- sum(S == 1)
   n_ec <- sum(S == 0)
 
-  # calibration weights (entropy balancing) for EC sample
-  dat_df <- as.data.frame(X)
-  dat_df$S <- S
-  W.out <- WeightIt::weightit(
-    as.formula(paste("S ~", paste(names(dat_df)[-ncol(dat_df)], collapse = " + "))),
-    data = dat_df, estimand = "ATT", method = "ebal", include.obj = T
-  )
-  w <- W.out$weights / n_ec
+  X_try <- X
+  success <- FALSE
 
-  # reproduce calibration weights for all sample, since w[S == 1] is constant
-  Xscale <- WeightIt:::.make_closer_to_1(X)
-  Xtarget <- map(1:ncol(Xscale), function(j) {
-    Xscale[,j] - colMeans(Xscale[S == 1, , drop=F])[j]
-  }) %>% sapply(function(x) x)
-  ww_init <- exp(-Xtarget %*% W.out$obj$`0`$par)
-  ww <- ww_init / sum(ww_init[S == 0])
-  # # check ww[S == 0] = w[S == 0]
-  # max(abs(ww[S == 0] - w[S == 0]))
-  # plot(ww[S == 0], w[S==0])
-  # tibble(ww[S == 0], w[S==0])
+  while (ncol(X_try) > 0) {
+    # calibration weights (entropy balancing) for EC sample
+    dat_df <- data.frame(X_try, S = S)
+    tryCatch({
+      W.out <- WeightIt::weightit(
+        S ~ .,
+        data = dat_df,
+        estimand = "ATT",
+        method = "ebal",
+        include.obj = TRUE
+      )
+      success <- TRUE
+    }, error = function(e) {
+      # do nothing, just continue
+    })
+    if (success) {
+      break
+    } else {
+      # remove last column and retry
+      X_try <- X_try[, -ncol(X_try), drop = FALSE]
+    }
+  }
 
-  # calibration weights for RCT sample
-  w[S == 1] <- ww[S == 1]
-  qhat <- w * n_rct
+  if (success) {
+    w <- W.out$weights / n_ec
 
-  if (any(is.na(qhat) | is.nan(qhat) | is.infinite(qhat))) {
-    pS <- glm(S ~ X, family = "binomial", tibble(S, X)) %>%
-      predict(tibble(S, X), "response")
-    qhat <- pS / (1 - pS)
+    # reproduce calibration weights for all sample, since w[S == 1] is constant
+    Xscale <- WeightIt:::.make_closer_to_1(X)
+    Xtarget <- sweep(Xscale, 2, colMeans(Xscale[S == 1, , drop = FALSE]))
+    ww_init <- exp(-Xtarget %*% W.out$obj$`0`$par)
+    ww <- ww_init / sum(ww_init[S == 0])
+    # # check ww[S == 0] = w[S == 0]
+    # max(abs(ww[S == 0] - w[S == 0]))
+    # plot(ww[S == 0], w[S==0])
+    # tibble(ww[S == 0], w[S==0])
+
+    # calibration weights for RCT sample
+    w[S == 1] <- ww[S == 1]
+    qhat <- w * n_rct
+
+    # if there is some strange weights, return constant weights
+    if (any(!is.finite(qhat))) {
+      pS <- n_rct / (n_rct + n_ec)
+      qhat <- rep(pS / (1 - pS), n_rct + n_ec)
+    }
+  } else {
+    # if all attempts fail, return constant weights
+    pS <- n_rct / (n_rct + n_ec)
+    qhat <- rep(pS / (1 - pS), n_rct + n_ec)
   }
 
   # check q_cw vs q_ipw
@@ -262,13 +285,13 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
             family, base_model = "ral", var_sel = TRUE
           )
           X_cw_ind <- union(X_cw_ind_rc, X_cw_ind_ec)
-          X_cw <- dat$X[, X_cw_ind, drop=FALSE]
+          X_cw <- dat$X[, X_cw_ind, drop = FALSE]
         }
       } else { # use all X
         X_cw <- dat$X
       }
     } else { # user-specified X_cw
-      X_cw <- dat$X[, X_cw_ind, drop=FALSE]
+      X_cw <- dat$X[, X_cw_ind, drop = FALSE]
     }
     # calibration weighting
     qhat <- compute_cw(dat$S, X_cw)
