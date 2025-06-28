@@ -201,7 +201,7 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
 }
 
 rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
-                            sampling_model, cw = FALSE) {
+                            sampling_model, cw = FALSE, X_cw_ind = NULL) {
   n_rt <- dat %>% filter(A == 1, S == 1) %>% nrow
   n_rc <- dat %>% filter(A == 0, S == 1) %>% nrow
   n_rct <- dat %>% filter(S == 1) %>% nrow
@@ -248,16 +248,30 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
 
   # weighting model
   if (cw) {
-    if (sampling_model == "ral") {
-      X_sel_ind <- pred_model(
-        dat %>% mutate(Y = S),
-        dat %>% mutate(Y = S),
-        family = "binomial", base_model = "ral", var_sel = TRUE
-      )
-      qhat <- compute_cw(dat$S, dat$X[,X_sel_ind])
-    } else {
-      qhat <- compute_cw(dat$S, dat$X)
+    if (is.null(X_cw_ind)) { # no user-specified X_cw
+      if (sampling_model == "ral") { # data-adaptive X_cw by outcome-adaptive lasso
+        if (is.null(X_cw_ind)) {
+          X_cw_ind_rc <- pred_model(
+            dat %>% filter(A == 0, S == 1),
+            dat %>% filter(A == 0, S == 1),
+            family, base_model = "ral", var_sel = TRUE
+          )
+          X_cw_ind_ec <- pred_model(
+            dat %>% filter(A == 0, S == 0),
+            dat %>% filter(A == 0, S == 0),
+            family, base_model = "ral", var_sel = TRUE
+          )
+          X_cw_ind <- union(X_cw_ind_rc, X_cw_ind_ec)
+          X_cw <- dat$X[, X_cw_ind, drop=FALSE]
+        }
+      } else { # use all X
+        X_cw <- dat$X
+      }
+    } else { # user-specified X_cw
+      X_cw <- dat$X[, X_cw_ind, drop=FALSE]
     }
+    # calibration weighting
+    qhat <- compute_cw(dat$S, X_cw)
   } else {
     # sampling propensity score model
     # pS <- glm(S ~ X, family = "binomial", dat) %>% predict(dat, "response")

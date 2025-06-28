@@ -21,6 +21,7 @@ ec_borrow(
   cv_fold = 10,
   outcome_model = "glm",
   sampling_model = "glm",
+  X_cw_ind = NULL,
   max_r = Inf,
   sig_level = 0.05,
   small_n_adj = TRUE,
@@ -99,6 +100,10 @@ adaptive lasso.}
 sampling model. Default is "glm" for generalized linear model.
 Other options are "rf" for random forest and "ral" for relaxed adaptive
 lasso.}
+
+\item{X_cw_ind}{Integer vector of column indices in \code{X} to balance using
+calibration weighting. Default is \code{NULL}: uses all columns, or applies
+data-adaptive selection if \code{sampling_model = "ral"}.}
 
 \item{max_r}{Numeric value limiting the ratio of residual variances between
 trial and external control groups. Default is \code{Inf} (no restriction).}

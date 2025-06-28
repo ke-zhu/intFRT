@@ -58,6 +58,9 @@
 #'   sampling model. Default is "glm" for generalized linear model.
 #'   Other options are "rf" for random forest and "ral" for relaxed adaptive
 #'   lasso.
+#' @param X_cw_ind Integer vector of column indices in `X` to balance using
+#' calibration weighting. Default is `NULL`: uses all columns, or applies
+#' data-adaptive selection if `sampling_model = "ral"`.
 #' @param max_r Numeric value limiting the ratio of residual variances between
 #'   trial and external control groups. Default is `Inf` (no restriction).
 #' @param sig_level Numeric significance level for hypothesis tests. Default is
@@ -245,6 +248,7 @@ ec_borrow <- function(
     # AIPW
     outcome_model = "glm",
     sampling_model = "glm",
+    X_cw_ind = NULL,
     max_r = Inf,
     # testing
     sig_level = 0.05,
@@ -544,7 +548,7 @@ ec_borrow <- function(
   if (identical(method, "Borrow ACW")) {
     est_fun <- function(dat) {
       rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj,
-                      sampling_model, cw = TRUE) %>%
+                      sampling_model, cw = TRUE, X_cw_ind = X_cw_ind) %>%
         # borrow all ECs
         mutate(id_sel = list(which(dat$S == 0)))
     }
@@ -629,7 +633,7 @@ ec_borrow <- function(
         bias[dat$S == 0] <- bias_ec
         dat_sel <- dat %>% filter(bias == 0)
         rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj,
-                        sampling_model, cw = TRUE) %>%
+                        sampling_model, cw = TRUE, X_cw_ind = X_cw_ind) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
       }
     }
