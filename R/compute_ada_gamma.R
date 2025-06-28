@@ -115,23 +115,24 @@ compute_ada_gamma <- function(Y, A, S, X,
     # estimators
     if (parallel) {
       est_grid <- furrr::future_map(gamma_grid, function(g) {
-        tryCatch({
-          est_one <- ec_borrow(
+        est_one <- tryCatch({
+          ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
             "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
             gamma_sel = g, ...
           )$res$est[1]
-        }, error = function(e) {est_one <- NA})
+        }, error = function(e) NA)
 
         if (!is.na(est_one)) {
           est_rep <- map(dat_rep, ~ {
-            tryCatch({
-              est_csb <- ec_borrow(
+            est_csb <- tryCatch({
+              ec_borrow(
                 .$Y, .$A, .$S, .$X,
                 "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
                 gamma_sel = g, ...
               )$res$est[1]
-            }, error = function(e) {est_csb <- est_one})
+            }, error = function(e) est_one)
+
             est_csb
           })
         } else {
@@ -142,23 +143,24 @@ compute_ada_gamma <- function(Y, A, S, X,
       }, .options = furrr::furrr_options(seed = TRUE))
     } else {
       est_grid <- map(gamma_grid, function(g) {
-        tryCatch({
-          est_one <- ec_borrow(
+        est_one <- tryCatch({
+          ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
             "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
             gamma_sel = g, ...
           )$res$est[1]
-        }, error = function(e) {est_one <- NA})
+        }, error = function(e) NA)
 
         if (!is.na(est_one)) {
           est_rep <- map(dat_rep, ~ {
-            tryCatch({
-              est_csb <- ec_borrow(
+            est_csb <- tryCatch({
+              ec_borrow(
                 .$Y, .$A, .$S, .$X,
                 "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
                 gamma_sel = g, ...
               )$res$est[1]
-            }, error = function(e) {est_csb <- est_one})
+            }, error = function(e) est_one)
+
             est_csb
           })
         } else {
