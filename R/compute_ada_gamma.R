@@ -75,6 +75,7 @@
 #' @import purrr
 #' @export
 compute_ada_gamma <- function(Y, A, S, X,
+                              method = "Conformal Selective Borrow AIPW",
                               family = "gaussian",
                               gamma_grid = seq(0, 1, by = 0.1),
                               n_rep_gamma = 100,
@@ -119,7 +120,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         est_one <- tryCatch({
           ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            method, family, n_fisher = NULL,
             gamma_sel = g, ...
           )$res$est[1]
         }, error = function(e) NA)
@@ -129,7 +130,7 @@ compute_ada_gamma <- function(Y, A, S, X,
             est_csb <- tryCatch({
               ec_borrow(
                 .$Y, .$A, .$S, .$X,
-                "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+                method, family, n_fisher = NULL,
                 gamma_sel = g, ...
               )$res$est[1]
             }, error = function(e) est_one)
@@ -147,7 +148,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         est_one <- tryCatch({
           ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            method, family, n_fisher = NULL,
             gamma_sel = g, ...
           )$res$est[1]
         }, error = function(e) NA)
@@ -157,7 +158,7 @@ compute_ada_gamma <- function(Y, A, S, X,
             est_csb <- tryCatch({
               ec_borrow(
                 .$Y, .$A, .$S, .$X,
-                "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+                method, family, n_fisher = NULL,
                 gamma_sel = g, ...
               )$res$est[1]
             }, error = function(e) est_one)
@@ -209,7 +210,7 @@ compute_ada_gamma <- function(Y, A, S, X,
       est_grid <- furrr::future_map(gamma_grid, function(g) {
         fit <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+          method, family, n_fisher = NULL,
           gamma_sel = g, ...
         )
         est_one <- fit$out$est
@@ -221,7 +222,7 @@ compute_ada_gamma <- function(Y, A, S, X,
       est_grid <- map(gamma_grid, function(g) {
         fit <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+          method, family, n_fisher = NULL,
           gamma_sel = g, ...
         )
         est_one <- fit$out$est
@@ -264,7 +265,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         # distribution of T under H0
         res_H0 <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = n_rep_gamma,
+          method, family, n_fisher = n_rep_gamma,
           gamma_sel = g, output_frt = TRUE
         )
         T_H0 <- res_H0$out_frt$est
@@ -295,7 +296,7 @@ compute_ada_gamma <- function(Y, A, S, X,
             )
           res_H1 <- ec_borrow(
             dat_H1$Y, dat_H1$A, dat_H1$S, dat_H1$X,
-            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            method, family, n_fisher = NULL,
             gamma_sel = g, output_frt = TRUE
           )
           res_H1$res$est[1]
@@ -316,7 +317,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         # distribution of T under H0
         res_H0 <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
-          "Conformal Selective Borrow AIPW", family, n_fisher = n_rep_gamma,
+          method, family, n_fisher = n_rep_gamma,
           gamma_sel = g, output_frt = TRUE
         )
         T_H0 <- res_H0$out_frt$est
@@ -347,7 +348,7 @@ compute_ada_gamma <- function(Y, A, S, X,
             )
           res_H1 <- ec_borrow(
             dat_H1$Y, dat_H1$A, dat_H1$S, dat_H1$X,
-            "Conformal Selective Borrow AIPW", family, n_fisher = NULL,
+            method, family, n_fisher = NULL,
             gamma_sel = g, output_frt = TRUE
           )
           res_H1$res$est[1]
