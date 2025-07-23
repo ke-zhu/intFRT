@@ -323,6 +323,23 @@ ec_borrow <- function(
     gamma_sel <- 1
   }
 
+  if (identical(method, "No Borrow OM")) {
+    est_fun <- function(dat) {
+      dat_rct <- dat %>% filter(S == 1)
+      m1 <- pred_model(dat_rct %>% filter(A == 1), dat_rct, family, outcome_model)
+      m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
+      d <- dat %>%
+        mutate(d_i = m1 - m0) %>%
+        pull(d_i)
+      tibble(
+        est = mean(d),
+        ess_sel = 0,
+        id_sel = list(NULL)
+      )
+    }
+    gamma_sel <- 1
+  }
+
   if (identical(method, "No Borrow AIPW")) {
     est_fun <- function(dat) {
       rct_aipw(dat, family, outcome_model, small_n_adj) %>%
@@ -352,18 +369,19 @@ ec_borrow <- function(
   if (identical(method, "Borrow OM")) {
     est_fun <- function(dat) {
       n_ec <- dat %>% filter(A == 0, S == 0) %>% nrow
+      # m10 <- fit_outcome_model(dat, family, outcome_model)
+      # m1 <- m10$m1
+      # m0 <- m10$m0
+      m1 <- pred_model(dat %>% filter(A == 1), dat, family, outcome_model)
+      m0 <- pred_model(dat %>% filter(A == 0), dat, family, outcome_model)
 
-      m10 <- fit_outcome_model(dat, family, outcome_model)
-      m1 <- m10$m1
-      m0 <- m10$m0
       d <- dat %>%
         mutate(d_i = m1 - m0) %>%
         filter(S == 1) %>%
         pull(d_i)
       tibble(
         est = mean(d),
-        # borrow all ECs
-        ess_sel = n_ec,
+        ess_sel = n_ec, # borrow all ECs
         id_sel = list(which(dat$S == 0))
       )
     }
@@ -680,6 +698,53 @@ ec_borrow <- function(
                         small_n_adj,
                         sampling_model, cw = TRUE, X_cw_ind = X_cw_ind) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
+      }
+    }
+  }
+
+  if (identical(method, c("Conformal Selective Borrow OM"))) { # proposed method
+    # est_fun
+    est_fun <- function(dat) {
+      x <- dat %>% filter(A == 0) %>% pull(X)
+      y <- dat %>% filter(A == 0) %>% pull(Y)
+      s <- dat %>% filter(A == 0) %>% pull(S)
+      p_cf <- conformal_p(
+        x, y, s, family,
+        cf, cf_score, cf_model, split_train, cv_fold, sig_level
+      )
+      # biased or unbiased
+      bias_ec <- ifelse(p_cf > gamma_sel, 0, 1)
+      # estimation
+      if (sum(bias_ec == 0) < 5) {
+        # if n_sel < 5, do not borrow anyone
+        dat_rct <- dat %>% filter(S == 1)
+        m1 <- pred_model(dat_rct %>% filter(A == 1), dat_rct, family, outcome_model)
+        m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
+        d <- dat %>%
+          mutate(d_i = m1 - m0) %>%
+          pull(d_i)
+        tibble(
+          est = mean(d),
+          ess_sel = 0,
+          id_sel = list(NULL)
+        )
+      } else {
+        # if n_sel >= 5, borrow them
+        bias <- rep(0, nrow(dat))
+        bias[dat$S == 0] <- bias_ec
+        dat_sel <- dat %>% filter(bias == 0)
+        # apply full borrow to dat_sel
+        m1 <- pred_model(dat_sel %>% filter(A == 1), dat_sel, family, outcome_model)
+        m0 <- pred_model(dat_sel %>% filter(A == 0), dat_sel, family, outcome_model)
+        d <- dat %>%
+          mutate(d_i = m1 - m0) %>%
+          filter(S == 1) %>%
+          pull(d_i)
+        tibble(
+          est = mean(d),
+          ess_sel = dat_sel %>% filter(A == 0, S == 0) %>% nrow,
+          id_sel = list(which(dat$S == 0 & bias == 0))
+        )
       }
     }
   }
