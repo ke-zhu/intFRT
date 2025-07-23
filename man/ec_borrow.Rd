@@ -23,6 +23,7 @@ ec_borrow(
   sampling_model = "glm",
   X_cw_ind = NULL,
   max_r = Inf,
+  fix_r = NULL,
   sig_level = 0.05,
   small_n_adj = TRUE,
   parallel = FALSE,
@@ -107,6 +108,9 @@ data-adaptive selection if \code{sampling_model = "ral"}.}
 
 \item{max_r}{Numeric value limiting the ratio of residual variances between
 trial and external control groups. Default is \code{Inf} (no restriction).}
+
+\item{fix_r}{Numeric value fixing the ratio of residual variances between
+trial and external control groups. Default is \code{NULL} (no restriction).}
 
 \item{sig_level}{Numeric significance level for hypothesis tests. Default is
 0.05.}

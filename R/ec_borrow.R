@@ -63,6 +63,8 @@
 #' data-adaptive selection if `sampling_model = "ral"`.
 #' @param max_r Numeric value limiting the ratio of residual variances between
 #'   trial and external control groups. Default is `Inf` (no restriction).
+#' @param fix_r Numeric value fixing the ratio of residual variances between
+#'   trial and external control groups. Default is `NULL` (no restriction).
 #' @param sig_level Numeric significance level for hypothesis tests. Default is
 #'   0.05.
 #' @param small_n_adj Logical value indicating whether to adjust variance
@@ -251,6 +253,7 @@ ec_borrow <- function(
     sampling_model = "glm",
     X_cw_ind = NULL,
     max_r = Inf,
+    fix_r = NULL,
     # testing
     sig_level = 0.05,
     small_n_adj = TRUE,
@@ -389,11 +392,15 @@ ec_borrow <- function(
       # control group
       # compute r
       if (family == "gaussian") {
-        r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
-          resid(type = "response") %>% var
-        r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
-          resid(type = "response") %>% var
-        r <- min(r1 / r0, max_r)
+        if(is.null(fix_r)) {
+          r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
+            resid(type = "response") %>% var
+          r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
+            resid(type = "response") %>% var
+          r <- min(r1 / r0, max_r)
+        } else {
+          r <- fix_r
+        }
       } else if (family == "binomial") {
         # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
         r <- 1
@@ -445,11 +452,15 @@ ec_borrow <- function(
       # control group
       # compute r
       if (family == "gaussian") {
-        r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
-          resid(type = "response") %>% var
-        r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
-          resid(type = "response") %>% var
-        r <- min(r1 / r0, max_r)
+        if(is.null(fix_r)) {
+          r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
+            resid(type = "response") %>% var
+          r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
+            resid(type = "response") %>% var
+          r <- min(r1 / r0, max_r)
+        } else {
+          r <- fix_r
+        }
       } else if (family == "binomial") {
         # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
         r <- 1
@@ -502,11 +513,15 @@ ec_borrow <- function(
       # control group
       # compute r
       if (family == "gaussian") {
-        r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
-          resid(type = "response") %>% var
-        r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
-          resid(type = "response") %>% var
-        r <- min(r1 / r0, max_r)
+        if(is.null(fix_r)) {
+          r1 <- glm(Y ~ X, family = family, dat %>% filter(A == 0, S == 1)) %>%
+            resid(type = "response") %>% var
+          r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
+            resid(type = "response") %>% var
+          r <- min(r1 / r0, max_r)
+        } else {
+          r <- fix_r
+        }
       } else if (family == "binomial") {
         # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
         r <- 1
@@ -563,7 +578,8 @@ ec_borrow <- function(
 
   if (identical(method, "Borrow AIPW")) {
     est_fun <- function(dat) {
-      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj,
+      rct_ec_aipw_acw(dat, family, outcome_model, max_r, fix_r,
+                      small_n_adj,
                       sampling_model) %>%
         # borrow all ECs
         mutate(id_sel = list(which(dat$S == 0)))
@@ -573,7 +589,8 @@ ec_borrow <- function(
 
   if (identical(method, "Borrow ACW")) {
     est_fun <- function(dat) {
-      rct_ec_aipw_acw(dat, family, outcome_model, max_r, small_n_adj,
+      rct_ec_aipw_acw(dat, family, outcome_model, max_r, fix_r,
+                      small_n_adj,
                       sampling_model, cw = TRUE, X_cw_ind = X_cw_ind) %>%
         # borrow all ECs
         mutate(id_sel = list(which(dat$S == 0)))
@@ -626,7 +643,8 @@ ec_borrow <- function(
         bias <- rep(0, nrow(dat))
         bias[dat$S == 0] <- bias_ec
         dat_sel <- dat %>% filter(bias == 0)
-        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj,
+        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, fix_r,
+                        small_n_adj,
                         sampling_model) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
       }
@@ -658,7 +676,8 @@ ec_borrow <- function(
         bias <- rep(0, nrow(dat))
         bias[dat$S == 0] <- bias_ec
         dat_sel <- dat %>% filter(bias == 0)
-        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, small_n_adj,
+        rct_ec_aipw_acw(dat_sel, family, outcome_model, max_r, fix_r,
+                        small_n_adj,
                         sampling_model, cw = TRUE, X_cw_ind = X_cw_ind) %>%
           mutate(id_sel = list(which(dat$S == 0 & bias == 0)))
       }

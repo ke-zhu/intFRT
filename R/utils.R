@@ -223,7 +223,8 @@ rct_aipw <- function(dat, family, outcome_model, small_n_adj) {
   )
 }
 
-rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
+rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, fix_r,
+                            small_n_adj,
                             sampling_model, cw = FALSE, X_cw_ind = NULL) {
   n_rt <- dat %>% filter(A == 1, S == 1) %>% nrow
   n_rc <- dat %>% filter(A == 0, S == 1) %>% nrow
@@ -246,24 +247,27 @@ rct_ec_aipw_acw <- function(dat, family, outcome_model, max_r, small_n_adj,
     #   resid(type = "response") %>% var
     # r0 <- glm(Y ~ X, family = family, dat %>% filter(S == 0)) %>%
     #   resid(type = "response") %>% var
+    if (is.null(fix_r)) {
+      m0_rc <- pred_model(
+        dat %>% filter(A == 0, S == 1),
+        dat %>% filter(A == 0, S == 1),
+        family, outcome_model
+      )
+      y0_rc <- dat %>% filter(A == 0, S == 1) %>% pull(Y)
+      r1 <- var(y0_rc - m0_rc)
 
-    m0_rc <- pred_model(
-      dat %>% filter(A == 0, S == 1),
-      dat %>% filter(A == 0, S == 1),
-      family, outcome_model
-    )
-    y0_rc <- dat %>% filter(A == 0, S == 1) %>% pull(Y)
-    r1 <- var(y0_rc - m0_rc)
+      m0_ec <- pred_model(
+        dat %>% filter(A == 0, S == 0),
+        dat %>% filter(A == 0, S == 0),
+        family, outcome_model
+      )
+      y0_ec <- dat %>% filter(A == 0, S == 0) %>% pull(Y)
+      r0 <- var(y0_ec - m0_ec)
 
-    m0_ec <- pred_model(
-      dat %>% filter(A == 0, S == 0),
-      dat %>% filter(A == 0, S == 0),
-      family, outcome_model
-    )
-    y0_ec <- dat %>% filter(A == 0, S == 0) %>% pull(Y)
-    r0 <- var(y0_ec - m0_ec)
-
-    r <- min(r1 / r0, max_r)
+      r <- min(r1 / r0, max_r)
+    } else {
+      r <- fix_r
+    }
   } else if (family == "binomial") {
     # for binary outcome, under exchangeablity assumption, r=1 (Li et al., 2023)
     r <- 1
