@@ -257,6 +257,7 @@ ec_borrow <- function(
     # testing
     sig_level = 0.05,
     small_n_adj = TRUE,
+    test_stat = "ATE",
     # computing & output
     parallel = FALSE,
     n_cores = NULL,
@@ -330,7 +331,7 @@ ec_borrow <- function(
       m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
       d <- m1 - m0
       tibble(
-        est = mean(d),
+        est = ifelse(test_stat == "ATE", mean(d), mean(abs(d))),
         ess_sel = 0,
         id_sel = list(NULL)
       )
@@ -367,19 +368,15 @@ ec_borrow <- function(
   if (identical(method, "Borrow OM")) {
     est_fun <- function(dat) {
       n_ec <- dat %>% filter(A == 0, S == 0) %>% nrow
-      # m10 <- fit_outcome_model(dat, family, outcome_model)
-      # m1 <- m10$m1
-      # m0 <- m10$m0
       m1 <- pred_model(dat %>% filter(A == 1), dat, family, outcome_model)
       m0 <- pred_model(dat %>% filter(A == 0), dat, family, outcome_model)
-
       d <- dat %>%
         mutate(d_i = m1 - m0) %>%
         filter(S == 1) %>%
         pull(d_i)
       tibble(
-        est = mean(d),
-        ess_sel = n_ec, # borrow all ECs
+        est = ifelse(test_stat == "ATE", mean(d), mean(abs(d))),
+        ess_sel = n_ec,
         id_sel = list(which(dat$S == 0))
       )
     }
@@ -720,7 +717,7 @@ ec_borrow <- function(
         m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
         d <- m1 - m0
         tibble(
-          est = mean(d),
+          est = ifelse(test_stat == "ATE", mean(d), mean(abs(d))),
           ess_sel = 0,
           id_sel = list(NULL)
         )
@@ -737,7 +734,7 @@ ec_borrow <- function(
           filter(S == 1) %>%
           pull(d_i)
         tibble(
-          est = mean(d),
+          est = ifelse(test_stat == "ATE", mean(d), mean(abs(d))),
           ess_sel = dat_sel %>% filter(A == 0, S == 0) %>% nrow,
           id_sel = list(which(dat$S == 0 & bias == 0))
         )
