@@ -122,7 +122,7 @@ compute_ada_gamma <- function(Y, A, S, X,
           ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
             method, family, n_fisher = NULL,
-            gamma_sel = g, cf_score, ...
+            gamma_sel = g, cf_score = cf_score, ...
           )$res$est[1]
         }, error = function(e) NA)
 
@@ -132,7 +132,7 @@ compute_ada_gamma <- function(Y, A, S, X,
               ec_borrow(
                 .$Y, .$A, .$S, .$X,
                 method, family, n_fisher = NULL,
-                gamma_sel = g, cf_score, ...
+                gamma_sel = g, cf_score = cf_score, ...
               )$res$est[1]
             }, error = function(e) est_one)
 
@@ -150,7 +150,7 @@ compute_ada_gamma <- function(Y, A, S, X,
           ec_borrow(
             dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
             method, family, n_fisher = NULL,
-            gamma_sel = g, cf_score, ...
+            gamma_sel = g, cf_score = cf_score, ...
           )$res$est[1]
         }, error = function(e) NA)
 
@@ -160,7 +160,7 @@ compute_ada_gamma <- function(Y, A, S, X,
               ec_borrow(
                 .$Y, .$A, .$S, .$X,
                 method, family, n_fisher = NULL,
-                gamma_sel = g, cf_score, ...
+                gamma_sel = g, cf_score = cf_score, ...
               )$res$est[1]
             }, error = function(e) est_one)
 
@@ -212,7 +212,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         fit <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
           method, family, n_fisher = NULL,
-          gamma_sel = g, cf_score, ...
+          gamma_sel = g, cf_score = cf_score, ...
         )
         est_one <- fit$out$est
         est_se <- fit$out$se
@@ -224,7 +224,7 @@ compute_ada_gamma <- function(Y, A, S, X,
         fit <- ec_borrow(
           dat_full$Y, dat_full$A, dat_full$S, dat_full$X,
           method, family, n_fisher = NULL,
-          gamma_sel = g, cf_score, ...
+          gamma_sel = g, cf_score = cf_score, ...
         )
         est_one <- fit$out$est
         est_se <- fit$out$se
