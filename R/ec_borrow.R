@@ -328,9 +328,7 @@ ec_borrow <- function(
       dat_rct <- dat %>% filter(S == 1)
       m1 <- pred_model(dat_rct %>% filter(A == 1), dat_rct, family, outcome_model)
       m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
-      d <- dat %>%
-        mutate(d_i = m1 - m0) %>%
-        pull(d_i)
+      d <- m1 - m0
       tibble(
         est = mean(d),
         ess_sel = 0,
@@ -720,9 +718,7 @@ ec_borrow <- function(
         dat_rct <- dat %>% filter(S == 1)
         m1 <- pred_model(dat_rct %>% filter(A == 1), dat_rct, family, outcome_model)
         m0 <- pred_model(dat_rct %>% filter(A == 0), dat_rct, family, outcome_model)
-        d <- dat %>%
-          mutate(d_i = m1 - m0) %>%
-          pull(d_i)
+        d <- m1 - m0
         tibble(
           est = mean(d),
           ess_sel = 0,
@@ -736,7 +732,7 @@ ec_borrow <- function(
         # apply full borrow to dat_sel
         m1 <- pred_model(dat_sel %>% filter(A == 1), dat_sel, family, outcome_model)
         m0 <- pred_model(dat_sel %>% filter(A == 0), dat_sel, family, outcome_model)
-        d <- dat %>%
+        d <- dat_sel %>%
           mutate(d_i = m1 - m0) %>%
           filter(S == 1) %>%
           pull(d_i)
