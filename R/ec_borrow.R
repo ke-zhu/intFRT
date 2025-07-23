@@ -753,7 +753,10 @@ ec_borrow <- function(
   )[3] %>% unname
 
   # 2 Inference
-  if (method %in% c("Borrow OM", "Borrow IPW", "Borrow staIPW", "Borrow CW")) {
+  if (method %in% c("No Borrow OM",
+                    "Borrow OM", "Borrow IPW", "Borrow staIPW", "Borrow CW",
+                    "Conformal Selective Borrow OM"
+                    )) {
     if (!is.null(n_boot)) {
       # compute bootstrap SE
       runtime_boot <- system.time(
