@@ -7,27 +7,49 @@
 
 <!-- badges: end -->
 
-The goal of **intFRT** is to **int**egrate randomized controlled trials
-(RCTs) with external controls (ECs) in hybrid controlled trials,
-harnessing Fisher randomization tests (**FRT**) and Conformal Selective
-Borrowing (CSB). It enhances the statistical efficiency of average
-treatment effect (ATE) estimation and inference while ensuring valid
-hypothesis testing. Key features include:
+**intFRT** helps **int**egrate randomized controlled trials (RCTs) with
+external control data (ECs) to make treatment comparisons more accurate
+and reliable in hybrid controlled trials. It uses Fisher Randomization
+Tests (**FRT**) to provide exact finite-sample inference, and Conformal
+Selective Borrowing (CSB) to selectively include comparable external
+controls, reducing bias and improving statistical power. This makes the
+results more robust and informative when integrating clinical trial data
+with real-world evidence.
 
-🎲 **Fisher Randomization Tests (FRT)**: Ensures strict control of the
-Type I error rate in hybrid controlled trials.
+🎲 **Fisher Randomization Tests (FRT):** Strict Type I error control in
+hybrid controlled trials.
 
-🧲 **Conformal Selective Borrowing (CSB)**: Serves as both an ATE
-estimator and a test statistic for FRT, selectively borrowing comparable
-ECs to reduce hidden bias and enhance statistical power.
+🧲 **Conformal Selective Borrowing (CSB):** Selectively borrows
+comparable ECs to reduce bias and improve power.
 
-⚙️ **Adaptive Selection Threshold**: Dynamically determines the
-selection threshold for CSB.
+⚙️ **Adaptive Selection Threshold:** Automatically determines how much
+external data to borrow through CSB.
 
-📊 **Flexible Estimator Options**: Offers No Borrowing and various EC
+📊 **Flexible Estimator Options:** Offers No Borrowing and various EC
 borrowing estimators (IPW, staIPW, CW, OM, AIPW, ACW) with inference
 results based on asymptotic normality. These estimators can also be used
 as test statistics in FRT.
+
+📦 **Built-in Dataset:** `lungcancer` is a semi-synthetic dataset based
+on the CALGB 9633 trial and EHR data. It includes internal and external
+treated/control groups, preserves covariate mismatch between sources,
+and is designed for evaluating hybrid controlled trials and data fusion
+methods. All values are simulated and de-identified. Try
+`head(lungcancer)` to explore.
+
+💻 **Simulation Code:** Companion code for the ICML 2025 paper is
+available at <https://github.com/ke-zhu/frt-csb-code>
+
+📖 **Citation:** If you use this package, dataset, or code, please cite:
+
+> Ke Zhu, Shu Yang, and Xiaofei Wang (2025). [Enhancing Statistical
+> Validity and Power in Hybrid Controlled Trials: A Randomization
+> Inference Approach with Conformal Selective
+> Borrowing.](https://icml.cc/virtual/2025/poster/44990) In *Proceedings
+> of the 42nd International Conference on Machine Learning (ICML)*.
+> [\[arXiv\]](https://arxiv.org/abs/2410.11713)
+> [\[Slides\]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing)
+> [\[Poster\]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
 
 ## Installation
 
@@ -125,8 +147,8 @@ print(result_csb$res, width = Inf)
 #> 2 Conformal Selective Borrow AIPW+FRT NA    NA     NA     NA    9.09e- 2    NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    44.5   0.893
-#> 2    NA     0.537
+#> 1    44.5   0.921
+#> 2    NA     0.578
 ```
 
 - `est`: ATE estimate.
@@ -210,35 +232,3 @@ dat_plot %>%
 The above figure shows that Conformal Selective Borrowing discards
 incomparable ECs and borrows most of the comparable ones, except for a
 few suspicious ones.
-
-## Built-in Dataset: `lungcancer`
-
-The `lungcancer` dataset is a semi-synthetic dataset based on the CALGB
-9633 trial and an EHR-based real-world data source. It preserves the
-original data structure, including covariate mismatch between data
-sources. It includes internal and external treated/control groups for
-evaluating hybrid controlled trials and data fusion methods.
-
-All values are simulated and rigorously de-identified. No row in this
-dataset exactly matches any row in the original sources.
-
-``` r
-head(lungcancer)
-```
-
-## Simulation Code
-
-Companion code for the numerical experiments in our ICML 2025 paper is
-available at: 🔗 <https://github.com/ke-zhu/frt-csb-code>
-
-## Reference
-
-If you use this package, dataset, or code, please cite:
-
-Ke Zhu, Shu Yang, and Xiaofei Wang (2025). [Enhancing statistical
-validity and power in hybrid controlled trials: A randomization
-inference approach with conformal selective
-borrowing.](https://arxiv.org/abs/2410.11713) *Proceedings of the 42nd
-International Conference on Machine Learning (ICML)*, PMLR, in press.
-[\[Slides\]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing)
-[\[Poster\]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
