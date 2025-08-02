@@ -31,14 +31,16 @@ results based on asymptotic normality. These estimators can also be used
 as test statistics in FRT.
 
 📦 **Built-in Dataset:** `lungcancer` is a semi-synthetic dataset based
-on the CALGB 9633 trial and EHR data. It includes internal and external
-treated/control groups, preserves covariate mismatch between sources,
-and is designed for evaluating hybrid controlled trials and data fusion
-methods. All values are simulated and de-identified. Try
-`head(lungcancer)` to explore.
+on the [CALGB 9633
+trial](https://ascopubs.org/doi/10.1200/JCO.2008.16.4855) and EHR data.
+It includes internal and external treated/control groups, preserves
+covariate mismatch between sources, and is designed for evaluating
+hybrid controlled trials and data fusion methods. All values are
+simulated and de-identified for privacy. Try `head(lungcancer)` to
+explore.
 
 💻 **Simulation Code:** Companion code for the ICML 2025 paper is
-available at <https://github.com/ke-zhu/frt-csb-code>
+[available](https://github.com/ke-zhu/frt-csb-code).
 
 📖 **Citation:** If you use this package, dataset, or code, please cite:
 
@@ -48,8 +50,8 @@ available at <https://github.com/ke-zhu/frt-csb-code>
 > Borrowing.](https://icml.cc/virtual/2025/poster/44990) In *Proceedings
 > of the 42nd International Conference on Machine Learning (ICML)*.
 > [\[arXiv\]](https://arxiv.org/abs/2410.11713)
-> [\[Slides\]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing)
-> [\[Poster\]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
+> [\[slides\]](https://drive.google.com/file/d/1LkTDY12CjUL0BAGQAt4JmOBlgk-MN3Ix/view?usp=sharing)
+> [\[poster\]](https://drive.google.com/file/d/1g5vFT6irtPWFQWwh6AGe-iYCvMF4z0B2/view?usp=share_link)
 
 ## Installation
 
@@ -147,8 +149,8 @@ print(result_csb$res, width = Inf)
 #> 2 Conformal Selective Borrow AIPW+FRT NA    NA     NA     NA    9.09e- 2    NA
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
-#> 1    44.5   0.921
-#> 2    NA     0.578
+#> 1    44.5   0.875
+#> 2    NA     0.533
 ```
 
 - `est`: ATE estimate.
