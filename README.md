@@ -84,17 +84,17 @@ ada_g <- compute_ada_gamma(
   n_rep_gamma = 100,
   parallel = TRUE
 )
-#> Gamma = 0.00 | MSE = 0.5991
+#> Gamma = 0.00 | MSE = 0.6009
 #> Gamma = 0.10 | MSE = 0.0392
 #> Gamma = 0.20 | MSE = 0.0419
 #> Gamma = 0.30 | MSE = 0.0421
 #> Gamma = 0.40 | MSE = 0.0436
-#> Gamma = 0.50 | MSE = 0.0475
+#> Gamma = 0.50 | MSE = 0.0468
 #> Gamma = 0.60 | MSE = 0.0534
 #> Gamma = 0.70 | MSE = 0.0525
 #> Gamma = 0.80 | MSE = 0.0562
 #> Gamma = 0.90 | MSE = 0.0640
-#> Gamma = 1.00 | MSE = 0.0720
+#> Gamma = 1.00 | MSE = 0.0723
 ada_g
 #> [1] 0.1
 ```
@@ -126,7 +126,7 @@ print(result_csb$res, width = Inf)
 #>   ess_sel runtime
 #>     <dbl>   <dbl>
 #> 1    44.5   0.893
-#> 2    NA     0.544
+#> 2    NA     0.537
 ```
 
 - `est`: ATE estimate.
@@ -211,7 +211,29 @@ The above figure shows that Conformal Selective Borrowing discards
 incomparable ECs and borrows most of the comparable ones, except for a
 few suspicious ones.
 
+## Built-in Dataset: `lungcancer`
+
+The `lungcancer` dataset is a semi-synthetic dataset based on the CALGB
+9633 trial and an EHR-based real-world data source. It preserves the
+original data structure, including covariate mismatch between data
+sources. It includes internal and external treated/control groups for
+evaluating hybrid controlled trials and data fusion methods.
+
+All values are simulated and rigorously de-identified. No row in this
+dataset exactly matches any row in the original sources.
+
+``` r
+head(lungcancer)
+```
+
+## Simulation Code
+
+Companion code for the numerical experiments in our ICML 2025 paper is
+available at: 🔗 <https://github.com/ke-zhu/frt-csb-code>
+
 ## Reference
+
+If you use this package, dataset, or code, please cite:
 
 Ke Zhu, Shu Yang, and Xiaofei Wang (2025). [Enhancing statistical
 validity and power in hybrid controlled trials: A randomization
